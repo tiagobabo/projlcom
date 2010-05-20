@@ -1,0 +1,29 @@
+CPU 686
+BITS 32
+
+%define EOI 20h 			; define EOI como valendo 0x20
+%define PIC1_CMD  0x20  
+
+global _sec_tick	 	; declara nome_var como acessível a módulos escritos em C
+global _mili_tick					
+global _t0_isr 				; o handler também deve ser global, para ser instalado
+
+section .data 				; .data é a zona de dados inicializados
+	_sec_tick dd 0 			; declara variável nome_var com 4 bytes (dd) e inicializa-a com 0
+	_mili_tick dd 0
+	contador dd 1000
+	
+section .text 				; .text é a zona de código
+_t0_isr: 					; deve ser global para ser acedida em módulos escritos em C			
+	push eax
+	inc dword[_mili_tick]	
+	dec dword[contador]
+	jnz fim
+	inc dword [_sec_tick]
+	mov dword[contador], 1000
+fim:
+	mov al, EOI 			; sinaliza EOI para o PIC-1
+	out PIC1_CMD, al	
+	pop eax 				; todos os registos guardados
+	iretd
+END 						; fim de código fonte assembly
