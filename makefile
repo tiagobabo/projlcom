@@ -2,8 +2,8 @@
 
 all: proj.exe
 
-proj.exe: video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serial.o video-text.o
-	gcc -Wall liblcom.a video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serial.o video-text.o -o proj.exe
+proj.exe: video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o video-text.o serie.o
+	gcc -Wall video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o video-text.o serie.o -o proj.exe
 	
 video.o: video.c video.h utypes.h
 	gcc -c -Wall video.c
@@ -11,7 +11,7 @@ video.o: video.c video.h utypes.h
 sprite.o: sprite.c sprite.h utypes.h
 	gcc -c -Wall sprite.c
 	
-main.o: main.c sprite.h video.h utypes.h song.h rtc.h timer.h GQueue.h queue.h kbc.h
+main.o: main.c sprite.h video.h utypes.h song.h rtc.h timer.h GQueue.h queue.h kbc.h serie.h
 	gcc -c -Wall main.c	
 	
 kbc.o: kbc.h kbc.c timer.h
@@ -45,13 +45,13 @@ gqueue.o: GQueue.c GQueue.h
 	gcc -Wall -c GQueue.c
 	
 song.o: song.c song.h
-	gcc -Wall -c song.c	
-
-serial.o: serial.c serial.h
-	gcc -Wall -c serial.c		
+	gcc -Wall -c song.c		
 	
 video-text.o: video-text.c video-text.h
 	gcc -Wall -c video-text.c
+	
+serie.o: serie.c serie.h
+	gcc -Wall -c serie.c
 	
 clean:
 	-rm *.o *.exe

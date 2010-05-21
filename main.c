@@ -13,9 +13,9 @@
 #include "rtc.h"
 #include "GQueue.h"
 #include "song.h"
-#include "serial.h"
 #include "video-text.h"
 #include "queue.h"
+#include "serie.h"
 
 int time_sound;
 Note* actual = NULL;
@@ -44,6 +44,70 @@ typedef enum {INACTIVE, PLAY, PAUSE, STOPPED} MUSIC_STATE;
 volatile MUSIC_STATE state = INACTIVE;
 volatile int ms_count = 0;
 
+
+Queue rcv_char_queue, send_char_queue;
+volatile Word base;
+_go32_dpmi_seginfo old_serial_irq;
+
+void serial_isr(void)
+{
+	int ch; Bool not_full;
+	Byte st = inportb(base + SER_IIR) & INT_ID;
+	switch(st)
+	{
+		case INT_ST: return;
+
+		case RX_INT:
+			// queuePut(&rcv_char_queue, inportb(base + SER_DATA));
+			do not_full = queuePut(&rcv_char_queue, inportb(base + SER_DATA));
+			while (not_full && (inportb(base + SER_LSR) & RX_RDY));
+			
+			break;
+
+		case TX_INT:
+			// ch = queueGet(&send_char_queue);
+			// if(ch != -1) outportb(base + SER_DATA, ch);
+			do
+			{
+				ch = queueGet(&send_char_queue);
+				if(ch != -1) outportb(base + SER_DATA, ch);
+			}
+			while(ch != -1 && (inportb(base + SER_LSR) & TX_RDY));
+			
+			break;
+	}
+
+	outportb(PIC1_CMD, EOI);
+}
+
+void init_serie()
+{
+	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
+	install_c_irq_handler(serial_irq, serial_isr, &old_serial_irq);
+	
+	//inicializar IER
+	set_uart_register(base, SER_IER, RX_INT_EN | TX_INT_EN);
+
+	unmask_pic(serial_irq);
+}
+
+void print_bin(Byte b)
+{
+	int offset;
+	for(offset = 7; offset >= 0; offset--)
+		printf("%i", (b >> offset) & 1);
+}
+
+volatile Word base;
+
+void finalize_serie()
+{
+	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
+	mask_pic(serial_irq);
+	set_uart_register(base, SER_IER, 0);
+	reinstall_c_irq_handler(serial_irq, &old_serial_irq);
+}
+
 volatile int rtc_a = 0;
 volatile int rtc_p = 0;
 volatile int rtc_u = 0;
@@ -65,41 +129,6 @@ Pontuacoes pontuacao[10];
 Queue rcv_queue, send_queue;
 
 volatile Word base;
-
-void serial_isr(void)
-{
-	int ch = 0; 
-	Bool not_full = true;
-	Byte st = inportb(base + SER_IIR) & INT_ID; /* Origem de interrupção */
-	
-	switch(st)
-	{
-		case INT_ST: 
-			return;
-
-		case RX_INT:
-			// queuePut(&rcv_char_queue, inportb(base + SER_DATA));
-			do not_full = queuePut(&rcv_queue, inportb(base + SER_DATA));
-			while (not_full && (inportb(base + SER_LSR) & RX_RDY));
-			break;
-
-		case TX_INT:
-			// ch = queueGet(&send_char_queue);
-			// if(ch != -1) outportb(base + SER_DATA, ch);
-			do
-			{
-				ch = queueGet(&send_queue);
-				if(ch != -1) 
-				    outportb(base + SER_DATA, ch);
-			}
-			while(ch != -1 && (inportb(base + SER_LSR) & TX_RDY));
-			
-			break;
-	}
-
-	outportb(PIC1_CMD, EOI);
-}
-
 
 void return_pontuacoes(){
 	char line[100];
@@ -316,9 +345,20 @@ void desenha_ecra()
 	drawIntAt(vidas, 750, 200, WHITE, BLACK, 2,video_mem);
 	draw_string("TEMPO JOGO:", 660, 250, WHITE, BLACK, 2, video_mem);
 }
-
+int argc;
 void jogar()
 {
+	if(argc == 1)
+	{
+		base = COM1_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	else if(argc != 6)
+	{
+		base = COM2_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	init_serie();
 	Byte tecla;
 	rtc_p = 0;
 	do
@@ -331,10 +371,14 @@ void jogar()
 				tab[i][j] = 0;
 		int dir_x = 1;
 		int dir_y = 0;
+		int dir_x2 = -1;
+		int dir_y2 = 0;
 		desenha_ecra();
 		int x = 150;
 		int y = 375;
-		while(x < 599 && x > 100 && y > 150 && y < 599)
+		int x2 = 450;
+		int y2 = 375;
+		while((x < 599 && x > 100 && y > 150 && y < 599) && (x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
 		{
 			if(!queueEmpty(&teclas))
 			{
@@ -343,27 +387,63 @@ void jogar()
 				{
 					break;
 				}
-				if(tecla == key_down && dir_y != -1)
+				else if(tecla == key_down && dir_y != -1)
 				{
 					dir_x = 0;
 					dir_y = 1;
 				}
-				if(tecla == key_up && dir_y != 1)
+				else if(tecla == key_up && dir_y != 1)
 				{
 					dir_x = 0;
 					dir_y = -1;
 				}
-				if(tecla == key_left && dir_x != 1)
+				else if(tecla == key_left && dir_x != 1)
 				{
 					dir_x = -1;
 					dir_y = 0;
 				}
-				if(tecla == key_right && dir_x != -1)
+				else if(tecla == key_right && dir_x != -1)
 				{
 					dir_x = 1;
 					dir_y = 0;
 				}
 			}
+			
+		if(!queueEmpty(&rcv_char_queue))
+		{
+			char ch = queueGet(&rcv_char_queue);
+			if(ch  == 0x1)
+				{
+					break;
+				}
+				else if(ch == key_down && dir_y != -1)
+				{
+					dir_x2 = 0;
+					dir_y2 = 1;
+				}
+				else if(ch == key_up && dir_y != 1)
+				{
+					dir_x2 = 0;
+					dir_y2 = -1;
+				}
+				else if(ch == key_left && dir_x != 1)
+				{
+					dir_x2 = -1;
+					dir_y2 = 0;
+				}
+				else if(ch == key_right && dir_x != -1)
+				{
+					dir_x2 = 1;
+					dir_y2 = 0;
+				}
+		}
+		char ch = 0;
+		if(kbhit())
+		{
+			ch = getch();
+			envia_mensagem(base, ch);
+		}		
+			
 			drawIntAt(rtc_p/1000, 830, 250, WHITE, BLACK, 2,video_mem);
 			
 			int it = 0;
@@ -375,10 +455,20 @@ void jogar()
 			}
 				else
 					tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
+					
+			set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
+			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
+			{
+				break;
+			}
+				else
+					tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 1;
 			
 			it++;
 			x = x + dir_x;
 			y = y + dir_y;
+			x2 = x2 + dir_x2;
+			y2 = y2 + dir_y2;
 			int a = rtc_p;
 			a += 10;
 			while(rtc_p < a);
@@ -391,6 +481,7 @@ void jogar()
 	drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
 	delay(2000);
 	vidas = 3;
+	finalize_serie();
 	draw_menu();
 }
 	
@@ -449,8 +540,9 @@ void printbitssimple(int n) {
 	printf("\n");
 }
 
-int main(int argc, char* argv[])
+int main(int a, char* argv[])
 {
+	argc = a;
 	_go32_dpmi_seginfo old2;
 	disable_irq(KBD_IRQ);
 	install_asm_irq_handler(KBD_IRQ, asm_kbd, &old2);
@@ -465,7 +557,6 @@ int main(int argc, char* argv[])
 	init();
 	state = STOPPED;
 	draw_menu();
-	
 	finalize();	
 	
 	leave_graphics(&map);
