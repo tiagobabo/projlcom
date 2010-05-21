@@ -530,7 +530,7 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
-	if(argc == 1)
+	/*if(argc == 1)
 	{
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
@@ -564,9 +564,9 @@ int main(int a, char* argv[])
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
 	finalize_serie();
-	return 0;
-	
-	/*if(argc == 1)
+	return 0;*/
+	argc = a;
+	if(argc == 1)
 	{
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
@@ -638,9 +638,9 @@ int main(int a, char* argv[])
 	
 	//getchar();
 	return 0;*/
-	//init_serie();
+	init_serie();
 	
-	/*//enviar caracteres
+	//enviar caracteres
 	fillScreen(RED);
 	drawFrame("Enviado", GREEN, 0, 0, WIDTH, HEIGHT / 2);
 	drawFrame("Recebido", GREEN, 0, HEIGHT / 2, WIDTH, HEIGHT - HEIGHT / 2);
@@ -687,5 +687,5 @@ int main(int a, char* argv[])
 	finalize_serie();
 	
 	system("CLS");
-	return 0;*/
+	return 0;
 }
