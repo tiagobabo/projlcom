@@ -44,7 +44,6 @@ typedef enum {INACTIVE, PLAY, PAUSE, STOPPED} MUSIC_STATE;
 volatile MUSIC_STATE state = INACTIVE;
 volatile int ms_count = 0;
 
-
 Queue rcv_char_queue, send_char_queue;
 volatile Word base;
 _go32_dpmi_seginfo old_serial_irq;
@@ -82,9 +81,10 @@ void serial_isr(void)
 
 void init_serie()
 {
+	_go32_dpmi_seginfo old;
 	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
-	install_c_irq_handler(serial_irq, serial_isr, &old_serial_irq);
-	
+	install_c_irq_handler(serial_irq, serial_isr, &old);
+	old_serial_irq = old;
 	//inicializar IER
 	set_uart_register(base, SER_IER, RX_INT_EN | TX_INT_EN);
 
