@@ -474,7 +474,7 @@ void jogar()
 			x2 = x2 + dir_x2;
 			y2 = y2 + dir_y2;
 			int a = rtc_p;
-			a += 50;
+			a += 10;
 			while(rtc_p < a);
 		}
 		vidas--;
