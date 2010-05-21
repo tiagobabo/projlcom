@@ -353,7 +353,7 @@ void jogar()
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
 	}
-	else if(argc != 6)
+	else if(argc != 1)
 	{
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
@@ -437,11 +437,10 @@ void jogar()
 					dir_y2 = 0;
 				}
 		}
-		char ch = 0;
+		//char ch = 0;
 		if(kbhit())
 		{
-			ch = getch();
-			envia_mensagem(base, ch);
+			envia_mensagem(base, tecla);
 		}		
 			
 			drawIntAt(rtc_p/1000, 830, 250, WHITE, BLACK, 2,video_mem);
