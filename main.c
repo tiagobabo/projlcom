@@ -358,15 +358,30 @@ void jogar()
 		for(i = 0; i < 499; i++)
 			for(j = 0; j < 449; j++)
 				tab[i][j] = 0;
-		int dir_x = 1;
-		int dir_y = 0;
-		int dir_x2 = -1;
-		int dir_y2 = 0;
+		int dir_x, dir_y, dir_x2, dir_y2, x, y, x2, y2;		
+		if(argc == 1)
+		{
+			dir_x = 1;
+			dir_y = 0;
+			dir_x2 = -1;
+			dir_y2 = 0;
+			x = 150;
+			y = 375;
+			x2 = 450;
+			y2 = 375;
+		}
+		else
+		{
+			dir_x2 = 1;
+			dir_y2 = 0;
+			dir_x = -1;
+			dir_y = 0;
+			x2 = 150;
+			y2 = 375;
+			x = 450;
+			y = 375;
+		}
 		desenha_ecra();
-		int x = 150;
-		int y = 375;
-		int x2 = 450;
-		int y2 = 375;
 		while((x < 599 && x > 100 && y > 150 && y < 599) && (x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
 		{
 			if(!queueEmpty(&teclas))
@@ -419,14 +434,14 @@ void jogar()
 					dir_x2 = 0;
 					dir_y2 = -1;
 				}
-				else if(ch == key_left && dir_x != -1)
-				{
-					dir_x2 = 1;
-					dir_y2 = 0;
-				}
-				else if(ch == key_right && dir_x != 1)
+				else if(ch == key_left && dir_x != 1)
 				{
 					dir_x2 = -1;
+					dir_y2 = 0;
+				}
+				else if(ch == key_right && dir_x != -1)
+				{
+					dir_x2 = 1;
 					dir_y2 = 0;
 				}
 		}
