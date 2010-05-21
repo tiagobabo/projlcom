@@ -405,7 +405,6 @@ void jogar()
 		if(!queueEmpty(&rcv_char_queue))
 		{
 			char ch = queueGet(&rcv_char_queue);
-			printf("%c\n", ch);
 			if(ch  == 0x1)
 				{
 					break;
