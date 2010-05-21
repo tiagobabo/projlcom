@@ -391,27 +391,32 @@ void jogar()
 				{
 					dir_x = 0;
 					dir_y = 1;
+					envia_mensagem(base, tecla);
 				}
 				else if(tecla == key_up && dir_y != 1)
 				{
 					dir_x = 0;
 					dir_y = -1;
+					envia_mensagem(base, tecla);
 				}
 				else if(tecla == key_left && dir_x != 1)
 				{
 					dir_x = -1;
 					dir_y = 0;
+					envia_mensagem(base, tecla);
 				}
 				else if(tecla == key_right && dir_x != -1)
 				{
 					dir_x = 1;
 					dir_y = 0;
+					envia_mensagem(base, tecla);
 				}
 			}
 			
 		if(!queueEmpty(&rcv_char_queue))
 		{
 			char ch = queueGet(&rcv_char_queue);
+			printf("%c\n", ch);
 			if(ch  == 0x1)
 				{
 					break;
@@ -437,11 +442,7 @@ void jogar()
 					dir_y2 = 0;
 				}
 		}
-		//char ch = 0;
-		if(kbhit())
-		{
-			envia_mensagem(base, tecla);
-		}		
+		//char ch = 0;		
 			
 			drawIntAt(rtc_p/1000, 830, 250, WHITE, BLACK, 2,video_mem);
 			
