@@ -530,7 +530,8 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
-	/*if(argc == 1)
+	argc = a;
+	if(argc == 1)
 	{
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
@@ -564,8 +565,8 @@ int main(int a, char* argv[])
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
 	finalize_serie();
-	return 0;*/
-	argc = a;
+	return 0;
+	/*
 	if(argc == 1)
 	{
 		base = COM1_ADD;
@@ -586,7 +587,7 @@ int main(int a, char* argv[])
 	}
 
 	//mostrar informacao
-	//printf("UART -> COM%i", (base == COM1_ADD) ? 1 : 2);
+	//printf("UART -> COM%i", (base == COM1_ADD) ? 1 : 2);*/
 	
 	/*printf("\nDATA = "); print_bin(inportb(base + SER_DATA));
 	printf("\nIER = "); print_bin(inportb(base + SER_IER));
@@ -638,7 +639,7 @@ int main(int a, char* argv[])
 	
 	//getchar();
 	return 0;*/
-	init_serie();
+	/*init_serie();
 	
 	//enviar caracteres
 	fillScreen(RED);
@@ -687,5 +688,5 @@ int main(int a, char* argv[])
 	finalize_serie();
 	
 	system("CLS");
-	return 0;
+	return 0;*/
 }
