@@ -419,14 +419,14 @@ void jogar()
 					dir_x2 = 0;
 					dir_y2 = -1;
 				}
-				else if(ch == key_left && dir_x != 1)
-				{
-					dir_x2 = -1;
-					dir_y2 = 0;
-				}
-				else if(ch == key_right && dir_x != -1)
+				else if(ch == key_left && dir_x != -1)
 				{
 					dir_x2 = 1;
+					dir_y2 = 0;
+				}
+				else if(ch == key_right && dir_x != 1)
+				{
+					dir_x2 = -1;
 					dir_y2 = 0;
 				}
 		}
