@@ -353,6 +353,7 @@ void jogar()
 	if(argc == 1)
 	{
 		while(queueEmpty(&rcv_char_queue));
+		printf("ESPERA\n");
 	}
 	do
 	{
