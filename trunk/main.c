@@ -350,7 +350,7 @@ void jogar()
 {
 	Byte tecla;
 	rtc_p = 0;
-	//if(argc == 1) while(rcv_char_queue.cnt == 0);
+	if(argc != 1) do{;} while(rcv_char_queue.cnt == 0);
 	do
 	{
 		clear_screen(BLACK, video_mem);
@@ -420,7 +420,6 @@ void jogar()
 			
 		if(!queueEmpty(&rcv_char_queue))
 		{
-			printf("TECLA!!\n");
 			char ch = queueGet(&rcv_char_queue);
 			if(ch  == 0x1)
 				{
