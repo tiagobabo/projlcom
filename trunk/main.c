@@ -79,12 +79,12 @@ void serial_isr(void)
 	outportb(PIC1_CMD, EOI);
 }
 
+
 void init_serie()
 {
-	_go32_dpmi_seginfo old;
 	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
-	install_c_irq_handler(serial_irq, serial_isr, &old);
-	old_serial_irq = old;
+	install_c_irq_handler(serial_irq, serial_isr, &old_serial_irq);
+	
 	//inicializar IER
 	set_uart_register(base, SER_IER, RX_INT_EN | TX_INT_EN);
 
@@ -348,17 +348,6 @@ void desenha_ecra()
 int argc;
 void jogar()
 {
-	if(argc == 1)
-	{
-		base = COM1_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-	}
-	else if(argc != 1)
-	{
-		base = COM2_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-	}
-	init_serie();
 	Byte tecla;
 	rtc_p = 0;
 	do
@@ -481,7 +470,6 @@ void jogar()
 	drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
 	delay(2000);
 	vidas = 3;
-	finalize_serie();
 	draw_menu();
 }
 	
@@ -542,6 +530,17 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
+	if(argc == 1)
+	{
+		base = COM1_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	else if(argc != 1)
+	{
+		base = COM2_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	init_serie();
 	argc = a;
 	_go32_dpmi_seginfo old2;
 	disable_irq(KBD_IRQ);
@@ -564,6 +563,129 @@ int main(int a, char* argv[])
 	disable_irq(KBD_IRQ);
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
-	
+	finalize_serie();
 	return 0;
+	
+	/*if(argc == 1)
+	{
+		base = COM1_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	else if(argc != 6)
+	{
+		base = COM2_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+		printf("ERRO!\n");
+		//return 0;
+	}
+	else
+	{
+		base = (atoi(argv[1]) == 1) ? COM1_ADD : COM2_ADD;
+		//Byte parity;
+		init_uart(base, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), true, true, true);
+	}
+
+	//mostrar informacao
+	//printf("UART -> COM%i", (base == COM1_ADD) ? 1 : 2);
+	
+	/*printf("\nDATA = "); print_bin(inportb(base + SER_DATA));
+	printf("\nIER = "); print_bin(inportb(base + SER_IER));
+	printf("\nIIR = "); print_bin(inportb(base + SER_IIR));
+	printf("\nLCR = "); print_bin(inportb(base + SER_LCR));
+	printf("\nMCR = "); print_bin(inportb(base + SER_MCR));
+	printf("\nLSR = "); print_bin(inportb(base + SER_LSR));
+	printf("\nMSR = "); print_bin(inportb(base + SER_MSR));
+	
+	printf("\nBaudrate - %d", get_baud(base));
+	
+	printf("\nParity - ");
+	Byte b = get_parity(base);
+	switch(b)
+	{
+		case PAR_NONE: printf("none"); break;
+		case PAR_ODD: printf("odd"); break;
+		case PAR_EVEN: printf("even"); break;
+		case PAR_HIGH: printf("high"); break;
+		case PAR_LOW: printf("low"); break;
+		default: break;
+	}
+	
+	printf("\nStop bits - %i", get_stop_bits(base));
+	printf("\nWord length - %i", get_nbits(base)); */
+	
+	/*char envia = 0;
+	char recebe;
+	
+	do
+	{
+		if(kbhit())
+		{
+			envia = getch();
+			printf("%c", envia);
+			envia_mensagem(base, envia);
+		}
+		
+		if (mensagem_espera(base))
+		{
+			recebe = recebe_mensagem(base);
+			putchar(recebe);
+			//printf("%c",recebe);
+		}
+		
+	} while (envia != 27);	
+	return 0;
+	
+	
+	//getchar();
+	return 0;*/
+	//init_serie();
+	
+	/*//enviar caracteres
+	fillScreen(RED);
+	drawFrame("Enviado", GREEN, 0, 0, WIDTH, HEIGHT / 2);
+	drawFrame("Recebido", GREEN, 0, HEIGHT / 2, WIDTH, HEIGHT - HEIGHT / 2);
+	int x_env_pos = 1, y_env_pos = 2, x_rec_pos = 1, y_rec_pos = HEIGHT / 2 + 2;
+
+	char ch = 0;
+	do
+	{	
+		if(!queueEmpty(&rcv_char_queue))
+		{
+			char ch = queueGet(&rcv_char_queue);
+			printCharAt(ch, x_rec_pos, y_rec_pos, GREEN);
+			
+			//actualizar cursor
+			x_rec_pos++;
+			if(x_rec_pos == WIDTH - 1)
+			{
+				x_rec_pos = 1;
+				y_rec_pos++;
+				if(y_rec_pos == HEIGHT - 1) y_rec_pos = HEIGHT / 2 + 2;
+			}
+		}
+		
+		if(kbhit())
+		{
+			ch = getch();
+			printCharAt(ch, x_env_pos, y_env_pos, GREEN);
+			
+			//actualizar cursor
+			x_env_pos++;
+			if(x_env_pos == WIDTH - 1)
+			{
+				x_env_pos = 1;
+				y_env_pos++;
+				if(y_env_pos == HEIGHT / 2 - 1) y_env_pos = 2;
+			}
+			
+			//queuePut(&send_char_queue, ch);
+			envia_mensagem(base, ch);
+		}
+	}
+	while(ch != 27);
+	
+	finalize_serie();
+	
+	system("CLS");
+	return 0;*/
 }

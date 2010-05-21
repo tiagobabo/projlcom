@@ -1,47 +1,40 @@
-#include <stdio.h>
-#include <math.h>
-#include <pc.h>
-#include "music.h"
-#include "timer.h"
 #include "queue.h"
 
-void queueInit(Queue *q)
+void queueInit(Queue* q)
 {
-	q->size=10;
-	q->cnt=0;
-	q->in=0;
-	q->out=0;
+	q->in = q->out = q->cnt = 0;
 }
 
-Bool queuePut(Queue *q, char c)
+
+Bool queuePut(Queue* q, Byte elem)
 {
-	if( q->cnt == q->size ) 
-	{
-	//void beep();
-	//beep();
-	return false; 
-	}
+	if(q->cnt == QUEUE_MAX_SIZE) return false;
+	(q->buf)[q->in] = elem;
 	
-	q->buf[ q->in ] = c;
-	q->in = q->in == q->size-1 ? 0 : q->in+1;
-	q->cnt++;
+	q->cnt++; q->in++;
+	if(q->in == QUEUE_MAX_SIZE) q->in = 0;
 	return true;
 }
 
-int queueGet(Queue *q)
+
+int queueGet(Queue* q)
 {
-	disable_irq(1);
-	if( q->cnt <= 0 ) { enable_irq(1); return -1; }
+	if(q->cnt == 0) return -1;
+	Byte data = (q->buf)[q->out];
 	
-	q->cnt = q->cnt-1;
-	char tmp = q->buf[ q->out ];
-	q->out = q->out == q->size-1 ? 0 : q->out+1;
-	enable_irq(1);
-	return tmp;
+	q->cnt--; q->out++;
+	if(q->out == QUEUE_MAX_SIZE) q->out = 0;
+	return data;
 }
 
-Bool queueEmpty(Queue *q)
-{ return q->cnt == 0 ? true : false; }
 
-Bool queueFull(Queue *q)
-{  return q->cnt == q->size ? true : false;  }
+Bool queueEmpty(Queue* q)
+{
+	return (q->cnt == 0);
+}
+
+
+Bool queueFull(Queue* q)
+{
+	return (q->cnt == QUEUE_MAX_SIZE);
+}
