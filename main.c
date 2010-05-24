@@ -29,6 +29,10 @@ Byte key_up = 0x11;
 Byte key_down = 0x1f;
 Byte key_left = 0x1e;
 Byte key_right = 0x20;
+Byte key_up_default = 0x11;
+Byte key_down_default = 0x1f;
+Byte key_left_default = 0x1e;
+Byte key_right_default = 0x20;
 char *video_mem;
 _go32_dpmi_seginfo old_rtc_irq;
 Song* bgm;
@@ -405,25 +409,25 @@ void jogar()
 				{
 					dir_x = 0;
 					dir_y = 1;
-					envia_mensagem(base, tecla);
+					envia_mensagem(base, key_down_default);
 				}
 				else if(tecla == key_up && dir_x != 0)
 				{
 					dir_x = 0;
 					dir_y = -1;
-					envia_mensagem(base, tecla);
+					envia_mensagem(base, key_up_default);
 				}
 				else if(tecla == key_left && dir_y != 0)
 				{
 					dir_x = -1;
 					dir_y = 0;
-					envia_mensagem(base, tecla);
+					envia_mensagem(base, key_left_default);
 				}
 				else if(tecla == key_right && dir_y != 0)
 				{
 					dir_x = 1;
 					dir_y = 0;
-					envia_mensagem(base, tecla);
+					envia_mensagem(base, key_right_default);
 				}
 			}
 			
@@ -434,22 +438,22 @@ void jogar()
 				{
 					break;
 				}
-				else if(ch == key_down && dir_x2 != 0)
+				else if(ch == key_down_default && dir_x2 != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = 1;
 				}
-				else if(ch == key_up && dir_x2 != 0)
+				else if(ch == key_up_default && dir_x2 != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = -1;
 				}
-				else if(ch == key_left && dir_y2 != 0)
+				else if(ch == key_left_default && dir_y2 != 0)
 				{
 					dir_x2 = -1;
 					dir_y2 = 0;
 				}
-				else if(ch == key_right && dir_y2 != 0)
+				else if(ch == key_right_default && dir_y2 != 0)
 				{
 					dir_x2 = 1;
 					dir_y2 = 0;
