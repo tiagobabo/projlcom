@@ -369,7 +369,6 @@ void jogar()
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
 	}
-	init_serie();
 	
 	if(argc != 1)
 	{	
@@ -389,6 +388,7 @@ void jogar()
 			queueGet(&rcv_char_queue);
 			envia_mensagem(base, key_right);
 		}
+		envia_mensagem(base, key_right);
 	}
 	else
 	{
@@ -408,6 +408,7 @@ void jogar()
 			queueGet(&rcv_char_queue);
 			envia_mensagem(base, key_left);
 		}
+		envia_mensagem(base, key_left);
 	}
 	if(flag)
 	{
@@ -581,6 +582,7 @@ void jogar()
 	vidas = 3;
 	vidas2 = 3;
 	}
+	set_uart_register(base, SER_IER, 0);
 	draw_menu();
 }
 
@@ -617,7 +619,6 @@ void menu_jogar()
 void draw_menu()
 {
 	clear_screen(BLACK, video_mem);
-	queueInit(&teclas);
 	draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
 	draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
 	draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
@@ -671,6 +672,8 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
+	init_serie();
+	queueInit(&teclas);
 	disable_irq(RTC_IRQ);
 	argc = a;
 	_go32_dpmi_seginfo old2;
