@@ -351,8 +351,8 @@ void jogar()
 	Byte tecla;
 	rtc_p = 0;
 	if(argc != 1) do{;} while(rcv_char_queue.cnt == 0);
-	else
-		envia_mensagem(base, key_down);
+	//else
+		//envia_mensagem(base, key_down);
 	do
 	{
 		clear_screen(BLACK, video_mem);
