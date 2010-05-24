@@ -359,7 +359,18 @@ void jogar()
 	rtc_p = 0;
 	if(argc != 1)
 	{	
-		while(rcv_char_queue.cnt == 0);
+		while(rcv_char_queue.cnt == 0)
+		{
+			if(!queueEmpty(&teclas))
+			{
+				tecla = queueGet(&teclas);
+				if(tecla  == 0x1)
+				{
+					envia_mensagem(base, tecla);
+					break;
+				}
+			}
+		}
 	}
 	else
 		envia_mensagem(base, key_right);
@@ -473,10 +484,12 @@ void jogar()
 				set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
 			}
 			
+			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 2 && tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1)
+				break;
 			
 			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1 || tab[(x+dir_x)-100][(y+dir_y)-100] == 2) //perde
 			{
-				if(argc ==1)
+				if(argc == 1)
 					vidas--;
 				else
 					vidas2--;
@@ -508,7 +521,7 @@ void jogar()
 	}
 	while((vidas != 0 && vidas2!=0) && tecla != 0x1);
 	draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
-	if(argc == 0)
+	if(argc == 1)
 	{
 		drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
 		if(vidas > 0)
@@ -526,7 +539,7 @@ void jogar()
 	}
 	
 	rtc_p = 0;
-	while(rtc_p < 200);
+	while(rtc_p < 2000);
 	vidas = 3;
 	vidas2 = 3;
 	draw_menu();
