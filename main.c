@@ -423,7 +423,7 @@ void jogar()
 				}
 			}
 			
-		if(!queueEmpty(&rcv_char_queue))
+		while(!queueEmpty(&rcv_char_queue))
 		{
 			char ch = queueGet(&rcv_char_queue);
 			if(ch  == 0x1)
