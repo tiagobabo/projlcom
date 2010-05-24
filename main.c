@@ -131,7 +131,7 @@ typedef struct {
 } Pontuacoes;
 Pontuacoes pontuacao[10];
 
-Queue rcv_queue, send_queue;
+Queue rcv_queue;
 
 volatile Word base;
 
@@ -150,7 +150,7 @@ void return_pontuacoes(){
 		fgets(line, 100, file);
 		if(line[strlen(line)-1] == '\n')
 			line[strlen(line)-1] = '\0';
-		pontuacao[i].nome = malloc (sizeof line);
+		pontuacao[i].nome = malloc (strlen(line)*sizeof(char));
 		strcpy(pontuacao[i].nome, line);
 
 		fgets(line, 100, file);
@@ -177,15 +177,14 @@ void read_pontuacoes(){
 	
 	while(i<10)
 	{
-	char* nome;
-	char* str;
-	int pont;
-	strcpy(nome,pontuacao[i].nome);
-	pont = pontuacao[i].pontua;
-	itoa(pont, str,10);
-	draw_string(nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
-	draw_string(str, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
-	i++;
+		char* nome;
+		int pont;
+		nome = malloc(sizeof(char)*(strlen(pontuacao[i].nome)+1));
+		strcpy(nome,pontuacao[i].nome);
+		pont = pontuacao[i].pontua;
+		draw_string(nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+		drawIntAt(pont, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+		i++;
 	}
 	while(1)
 	{
@@ -202,7 +201,6 @@ void read_pontuacoes(){
 
 void change_key(Byte* key)
 {
-	queueInit(&teclas);
 	Byte last_sc = 0;
 	do
 	{
@@ -350,6 +348,8 @@ void desenha_ecra()
 int argc;
 void jogar()
 {
+	queueClear(&rcv_char_queue);
+	//queueClear(&teclas);
 	Byte tecla;
 	rtc_p = 0;
 	int flag = 1;
@@ -582,12 +582,12 @@ void jogar()
 		vidas2 = 3;
 	}
 	set_uart_register(base, SER_IER, 0);
-	queueClear(&rcv_char_queue);
-	queueClear(&teclas);
+	finalize_serie();
 }
 
 void menu_jogar()
 {
+	Byte temp;
 	clear_screen(BLACK, video_mem);
 	draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
 	draw_string("MENU DE JOGO", HRES/2-150, 200, WHITE, BLACK, 2, video_mem);
@@ -614,7 +614,6 @@ void menu_jogar()
 		}
 	}
 	while (temp != 1);
-	clear_screen(BLACK, video_mem);
 }
 	
 void draw_menu()
@@ -694,7 +693,6 @@ int main(int a, char* argv[])
 	disable_irq(KBD_IRQ);
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
-	finalize_serie();
 	return 0;
 	
 /*	if(argc == 1)
