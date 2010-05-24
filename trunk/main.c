@@ -361,17 +361,17 @@ void jogar()
 	clear_screen(BLACK, video_mem);
 	if(argc == 1)
 	{
-		disable_irq(COM1_IRQ);
+		//disable_irq(COM1_IRQ);
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-		enable_irq(COM1_IRQ);
+		//enable_irq(COM1_IRQ);
 	}
 	else if(argc != 1)
 	{
-		disable_irq(COM2_IRQ);
+		//disable_irq(COM2_IRQ);
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-		enable_irq(COM2_IRQ);
+		//enable_irq(COM2_IRQ);
 	}
 	
 	if(argc != 1)
