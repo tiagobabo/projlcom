@@ -587,7 +587,6 @@ void jogar()
 		vidas2 = 3;
 	}
 	set_uart_register(base, SER_IER, 0);
-	draw_menu();
 }
 
 void menu_jogar()
