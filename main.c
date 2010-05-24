@@ -301,7 +301,7 @@ void init()
 	bgm = song_load("song_cat.txt");
 	musica = newGQueue(100, sizeof(Note));
 	return_pontuacoes();
-	song_pre_load_queue(100);
+	//song_pre_load_queue(100);
 	
 	Byte stat_b = read_rtc(RTC_STAT_B);
 	data_mode = RTC_STAT_B & RTC_DM;
@@ -350,9 +350,12 @@ void jogar()
 {
 	Byte tecla;
 	rtc_p = 0;
-	if(argc != 1) do{;} while(rcv_char_queue.cnt == 0);
-	//else
-		//envia_mensagem(base, key_down);
+	if(argc != 1)
+	{	
+		do{;}while(queueEmpty(&rcv_char_queue));
+	}
+	else
+		envia_mensagem(base, key_down);
 	do
 	{
 		clear_screen(BLACK, video_mem);
