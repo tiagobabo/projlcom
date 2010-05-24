@@ -90,6 +90,9 @@ void enable_irq(int irq);
 */
 void disable_irq(int irq);
 
+void mask_pic(int irq);
+void unmask_pic(int irq);
+
 /** @} end of interrupts */
 
 #endif

@@ -307,7 +307,7 @@ void init()
 	bgm = song_load("song_cat.txt");
 	musica = newGQueue(100, sizeof(Note));
 	return_pontuacoes();
-	song_pre_load_queue(100);
+	//song_pre_load_queue(100);
 	
 	Byte stat_b = read_rtc(RTC_STAT_B);
 	data_mode = RTC_STAT_B & RTC_DM;
@@ -352,10 +352,10 @@ void jogar()
 	rtc_p = 0;
 	if(argc != 1)
 	{	
-		while(queueEmpty(&rcv_char_queue));
+		do{;}while(rcv_char_queue.cnt == 0);
 	}
-	else
-		envia_mensagem(base, key_down);
+	//else
+		//envia_mensagem(base, key_down);
 	do
 	{
 		clear_screen(BLACK, video_mem);
@@ -487,7 +487,8 @@ void jogar()
 	draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
 	draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
 	drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-	delay(2000);
+	rtc_p = 0;
+	while(rtc_p < 200);
 	vidas = 3;
 	draw_menu();
 }
@@ -560,8 +561,8 @@ int main(int a, char* argv[])
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
 	}
-	disable_irq(RTC_IRQ);
 	init_serie();
+	disable_irq(RTC_IRQ);
 	argc = a;
 	_go32_dpmi_seginfo old2;
 	disable_irq(KBD_IRQ);
