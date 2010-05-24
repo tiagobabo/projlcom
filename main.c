@@ -197,10 +197,7 @@ void read_pontuacoes(){
 				break;
 			}
 		}
-	}
-	
-	draw_menu();
-	
+	}	
 }
 
 void change_key(Byte* key)
@@ -242,8 +239,6 @@ void config_keys()
 	clear_screen(BLACK, video_mem);
 	draw_string("Insira a nova tecla baixo:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
 	change_key(&key_down);
-
-	draw_menu();
 }
 
 void rtc_irq_handler(void)
@@ -628,36 +623,29 @@ void draw_menu()
 	draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
 	draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
 	do
-	{
-		
+	{	
 		if(!queueEmpty(&teclas))
 		{
 			temp = queueGet(&teclas);
 			if(temp  == 0x2)
 			{
-				draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLUE, 2, video_mem);
-				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
-				clear_screen(BLACK, video_mem);
 				menu_jogar();
-				break;
 			}
-			if(temp  == 0x3)
+			else if(temp  == 0x3)
 			{
-				draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLUE, 2, video_mem);
-				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
 				config_keys();
-				break;
 			}
-			if(temp  == 0x4)
+			else if(temp  == 0x4)
 			{
-				draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLUE, 2, video_mem);
 				read_pontuacoes();
-				break;
 			}
+			clear_screen(BLACK, video_mem);
+			draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
+			draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
+			draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
+			draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+			draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+			draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
 		}
 	}
 	while (temp != 1);
