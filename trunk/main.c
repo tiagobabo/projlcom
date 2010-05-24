@@ -613,7 +613,6 @@ void menu_jogar()
 	}
 	while (temp != 1);
 	clear_screen(BLACK, video_mem);
-	draw_menu();
 }
 	
 void draw_menu()
