@@ -463,19 +463,34 @@ void jogar()
 			drawIntAt(rtc_p/1000, 830, 300, WHITE, BLACK, 2,video_mem);
 			int it = 0;
 			
-			set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
+			if(argc == 1){
+				set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
+				set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
+			}
+			else
+			{			
+				set_pixel(x+dir_x, y + dir_y, LIGHT_BLUE, video_mem);
+				set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
+			}
+			
+			
 			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1 || tab[(x+dir_x)-100][(y+dir_y)-100] == 2) //perde
 			{
-				vidas--;
+				if(argc ==1)
+					vidas--;
+				else
+					vidas2--;
 				break;
 			}
 				else
 					tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
 					
-			set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
 			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 2) //perde
 			{
-				vidas2--;
+				if(argc ==1)
+					vidas2--;
+				else
+					vidas--;
 				break;
 			}
 				else
