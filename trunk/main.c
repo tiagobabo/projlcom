@@ -355,7 +355,7 @@ void jogar()
 		while(rcv_char_queue.cnt == 0);
 	}
 	else
-		envia_mensagem(base, key_down);
+		envia_mensagem(base, key_right);
 	do
 	{
 		clear_screen(BLACK, video_mem);
