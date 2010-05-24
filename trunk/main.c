@@ -20,6 +20,7 @@
 int time_sound;
 Note* actual = NULL;
 int vidas = 3;
+int vidas2 = 3;
 Queue teclas;
 Queue keys_queue;
 Byte temp;
@@ -341,9 +342,11 @@ void desenha_ecra()
 	draw_line(650, 600, 923, 600, WHITE, video_mem); 
 	draw_line(923, 150, 923, 600, WHITE, video_mem); 
 	
-	draw_string("VIDAS:", 660, 200, WHITE, BLACK, 2, video_mem);
-	drawIntAt(vidas, 750, 200, WHITE, BLACK, 2,video_mem);
-	draw_string("TEMPO JOGO:", 660, 250, WHITE, BLACK, 2, video_mem);
+	draw_string("VIDAS J1:", 660, 200, WHITE, BLACK, 2, video_mem);
+	drawIntAt(vidas, 800, 200, WHITE, BLACK, 2,video_mem);
+	draw_string("VIDAS J2:", 660, 250, WHITE, BLACK, 2, video_mem);
+	drawIntAt(vidas2, 800, 200, WHITE, BLACK, 2,video_mem);
+	draw_string("TEMPO JOGO:", 660, 300, WHITE, BLACK, 2, video_mem);
 }
 int argc;
 void jogar()
@@ -395,6 +398,7 @@ void jogar()
 			tecla = queueGet(&teclas);
 				if(tecla  == 0x1)
 				{
+					envia_mensagem(base, tecla);
 					break;
 				}
 				else if(tecla == key_down && dir_x != 0)
@@ -430,22 +434,22 @@ void jogar()
 				{
 					break;
 				}
-				else if(ch == key_down && dir_x != 0)
+				else if(ch == key_down && dir_x2 != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = 1;
 				}
-				else if(ch == key_up && dir_x != 0)
+				else if(ch == key_up && dir_x2 != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = -1;
 				}
-				else if(ch == key_left && dir_y != 0)
+				else if(ch == key_left && dir_y2 != 0)
 				{
 					dir_x2 = -1;
 					dir_y2 = 0;
 				}
-				else if(ch == key_right && dir_y != 0)
+				else if(ch == key_right && dir_y2 != 0)
 				{
 					dir_x2 = 1;
 					dir_y2 = 0;
@@ -453,24 +457,25 @@ void jogar()
 		}		
 			
 			drawIntAt(rtc_p/1000, 830, 250, WHITE, BLACK, 2,video_mem);
-			
 			int it = 0;
 			
 			set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
-			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1) //perde
+			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1 || tab[(x+dir_x)-100][(y+dir_y)-100] == 2) //perde
 			{
+				vidas--;
 				break;
 			}
 				else
 					tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
 					
 			set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
-			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
+			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 2) //perde
 			{
+				vidas2--;
 				break;
 			}
 				else
-					tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 1;
+					tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 2;
 			
 			it++;
 			x = x + dir_x;
@@ -481,7 +486,6 @@ void jogar()
 			a += 10;
 			while(rtc_p < a);
 		}
-		vidas--;
 	}
 	while(vidas > 0 && tecla != 0x1);
 	draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
@@ -490,6 +494,7 @@ void jogar()
 	rtc_p = 0;
 	while(rtc_p < 200);
 	vidas = 3;
+	vidas2 = 3;
 	draw_menu();
 }
 	
