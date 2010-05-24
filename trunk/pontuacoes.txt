@@ -17,4 +17,4 @@ Hulk
 Borga
 5000
 Phelps
-4500
+0

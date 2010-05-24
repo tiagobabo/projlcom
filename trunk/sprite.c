@@ -1,11 +1,13 @@
 #include "sprite.h"
+#include "video.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
 
-char table[] = {
+
+char table2[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /*character 0x00 */
 0x00, 0x00, 0x7e, 0x81, 0xa5, 0x81, 0x81, 0xbd, 0x99, 0x81, 0x81, 0x7e, 0x00, 0x00, 0x00, 0x00, /*character 0x01 */
 0x00, 0x00, 0x7e, 0xff, 0xdb, 0xff, 0xff, 0xc3, 0xe7, 0xff, 0xff, 0x7e, 0x00, 0x00, 0x00, 0x00, /*character 0x02 */
@@ -264,6 +266,7 @@ char table[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
+
 int auxiliar(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
 void put_int_at(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
 void draw_char_at(char c, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
@@ -376,7 +379,7 @@ void put_int_at(int num, int x, int y, int fore_color, int back_color, int char_
 
 void draw_char_at(char c, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base)
 {
-	char *char_def = table + c*CHR_H; 
+	char *char_def = table2 + c*CHR_H; 
 	
 	int lin, col, sx, sy;
 	int x = x_ori;
@@ -408,7 +411,7 @@ void draw_string(char* s, int x_ori, int y_ori, int fore_color, int back_color, 
 	}
 }
 
-Sprite * create_sprite(char *pic[], char *base)
+Sprite * create_sprite(char *pic[], char *base, int height_x, int vertical_y)
 {
 	Sprite *spr = (Sprite *)malloc(sizeof(Sprite)); // cria espaço para a Sprite
 	
@@ -416,9 +419,8 @@ Sprite * create_sprite(char *pic[], char *base)
 	
 	spr->map = read_xpm(pic, &width, &height); //leitura da figura correspondente à sprite
 	
-	// criar variaveis com valores aleatorios 
-	spr->x = randBetween(12, HRES-12); // valor de x aleatório mas dentro dos limites do ecrã 
-	spr->y = randBetween(12, VRES-12);  // bombas partem sempre de cima 
+	spr->x = height_x;
+	spr->y = vertical_y;
 	spr->xspeed = randBetween(1,MAX_SPEED); 
 	spr->yspeed = randBetween(1,MAX_SPEED);
 	
@@ -515,7 +517,6 @@ void draw_sprite(Sprite *spr, char *base)
 			if(spr->map[posY * spr->width + posX] != BLACK) // so pinta pixels !=s de black
 				set_pixel(posX + spr->x, posY + spr->y, spr->map[posY * spr->width + posX], base);
 				
-	put_int_at(spr->count,spr->x+11,spr->y+15, WHITE, RED, 10, base);
 }
 
 void erase_sprite(Sprite *spr, char *base)
@@ -528,7 +529,6 @@ void erase_sprite(Sprite *spr, char *base)
 			if(spr->map[posmap++] != BLACK)
 				set_pixel(spr->x + j, spr->y + i, BLACK, base);	
 	
-	put_int_at(spr->count,spr->x+11,spr->y+15, BLACK, BLACK, 10, base);
 }
 
 void drawIntAt(int num, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base ) {
