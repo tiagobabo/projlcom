@@ -179,6 +179,7 @@ void read_pontuacoes(){
 	
 	while(i<10)
 	{
+		printf("%d\n", pontuacao[i].pontua);
 		char* nome;
 		int pont;
 		nome = malloc(sizeof(char)*(strlen(pontuacao[i].nome)+1));
@@ -350,14 +351,18 @@ void desenha_ecra()
 
 void actualiza_pontuacao(int p)
 {
-	int i;
+	int ind, b;
+	int i = 0;
 	int a = 0;
 	char name[3];
-	for(i = 0; i < 10; i++)
-	{
-		if(pontuacao[i].pontua < p)
+	for(ind = 0; ind < 10 ; ind++)
+	{ 
+		if(pontuacao[ind].pontua < p)
 			{
-				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, 700, PURPLE, BLACK, 2, video_mem);
+				b = ind;
+				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, VRES/2 - 40, PURPLE, BLACK, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60, VRES/2, 15, 0, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60 + 0*25, VRES/2, 15, 0, 2, video_mem);
 				while(1)
 				{
 					
@@ -366,8 +371,7 @@ void actualiza_pontuacao(int p)
 						char kbd_char = queueGet(&teclas);
 						if( kbd_char == 1 ) 
 						{ 
-						clear_screen(BLACK, video_mem);
-						break; 
+							break; 
 						}
 						if( kbd_char  == 28 )
 						{
@@ -375,24 +379,34 @@ void actualiza_pontuacao(int p)
 						 i=0;
 						 a++;
 						 if( a >= 3 ) break;
-						drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2 - 40, 15, 0, 2, video_mem);
+						drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
 					}
 
 						switch( kbd_char )
 						{
 						case 80:
-						i++;
-						drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2 - 40, 15, 0, 2, video_mem);
+							i++;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
 						break;
 						case 72:
-						i--;
-						drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2 - 40, 15, 0, 2, video_mem);
+							i--;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
 						break;
 						}
 					}		
 				}
-				pontuacao[i].pontua = p;
-				pontuacao[i].nome = name;
+				name[3] = '\0';
+				int w;
+				Pontuacoes temp;
+				for(w = b; w < 8; w++)
+				{
+					temp = pontuacao[w+1];
+					pontuacao[w+1] = pontuacao[w];
+				}
+				printf("AFASF: %d\n", pontuacao[b].pontua);
+				pontuacao[b].pontua = p;
+				strcpy(pontuacao[b].nome, name);
+				break;
 			}
 	}
 }
