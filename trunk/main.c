@@ -350,12 +350,12 @@ void jogar()
 {
 	Byte tecla;
 	rtc_p = 0;
-	/*if(argc != 1)
+	if(argc != 1)
 	{	
-		do{;}while(rcv_char_queue.cnt == 0);
-	}*/
-	//else
-		//envia_mensagem(base, key_down);
+		while(rcv_char_queue.cnt == 0);
+	}
+	else
+		envia_mensagem(base, key_down);
 	do
 	{
 		clear_screen(BLACK, video_mem);
@@ -397,25 +397,25 @@ void jogar()
 				{
 					break;
 				}
-				else if(tecla == key_down && dir_y != -1)
+				else if(tecla == key_down && dir_x != 0)
 				{
 					dir_x = 0;
 					dir_y = 1;
 					envia_mensagem(base, tecla);
 				}
-				else if(tecla == key_up && dir_y != 1)
+				else if(tecla == key_up && dir_x != 0)
 				{
 					dir_x = 0;
 					dir_y = -1;
 					envia_mensagem(base, tecla);
 				}
-				else if(tecla == key_left && dir_x != 1)
+				else if(tecla == key_left && dir_y != 0)
 				{
 					dir_x = -1;
 					dir_y = 0;
 					envia_mensagem(base, tecla);
 				}
-				else if(tecla == key_right && dir_x != -1)
+				else if(tecla == key_right && dir_y != 0)
 				{
 					dir_x = 1;
 					dir_y = 0;
@@ -430,22 +430,22 @@ void jogar()
 				{
 					break;
 				}
-				else if(ch == key_down && dir_y != -1)
+				else if(ch == key_down && dir_x != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = 1;
 				}
-				else if(ch == key_up && dir_y != 1)
+				else if(ch == key_up && dir_x != 0)
 				{
 					dir_x2 = 0;
 					dir_y2 = -1;
 				}
-				else if(ch == key_left && dir_x != 1)
+				else if(ch == key_left && dir_y != 0)
 				{
 					dir_x2 = -1;
 					dir_y2 = 0;
 				}
-				else if(ch == key_right && dir_x != -1)
+				else if(ch == key_right && dir_y != 0)
 				{
 					dir_x2 = 1;
 					dir_y2 = 0;
@@ -464,7 +464,7 @@ void jogar()
 				else
 					tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
 					
-			set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
+			set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
 			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
 			{
 				break;
