@@ -196,7 +196,8 @@ void read_pontuacoes(){
 				break;
 			}
 		}
-	}	
+	}
+	draw_menu();
 }
 
 void change_key(Byte* key)
@@ -219,6 +220,7 @@ void change_key(Byte* key)
 			}
 		}
 	} while(last_sc != 0x1);
+	draw_menu();
 }
 void config_keys()
 {
@@ -583,6 +585,7 @@ void jogar()
 	}
 	set_uart_register(base, SER_IER, 0);
 	finalize_serie();
+	draw_menu();
 }
 
 void menu_jogar()
@@ -614,6 +617,7 @@ void menu_jogar()
 		}
 	}
 	while (temp != 1);
+	draw_menu();
 }
 	
 void draw_menu()
@@ -633,22 +637,18 @@ void draw_menu()
 			if(temp  == 0x2)
 			{
 				menu_jogar();
+				break;
 			}
 			else if(temp  == 0x3)
 			{
 				config_keys();
+				break;
 			}
 			else if(temp  == 0x4)
 			{
 				read_pontuacoes();
+				break;
 			}
-			clear_screen(BLACK, video_mem);
-			draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
-			draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
-			draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-			draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-			draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
-			draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
 		}
 	}
 	while (temp != 1);
