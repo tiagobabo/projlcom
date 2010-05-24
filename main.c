@@ -361,19 +361,19 @@ void jogar()
 	clear_screen(BLACK, video_mem);
 	if(argc == 1)
 	{
-		//disable_irq(COM1_IRQ);
+		disable_irq(COM1_IRQ);
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-		//enable_irq(COM1_IRQ);
+		enable_irq(COM1_IRQ);
 	}
 	else if(argc != 1)
 	{
-		//disable_irq(COM2_IRQ);
+		disable_irq(COM2_IRQ);
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-		//enable_irq(COM2_IRQ);
+		enable_irq(COM2_IRQ);
 	}
-	
+	init_serie();
 	if(argc != 1)
 	{	
 		while(rcv_char_queue.cnt == 0)
@@ -416,177 +416,177 @@ void jogar()
 	}
 	if(flag)
 	{
-	do
-	{
-		clear_screen(BLACK, video_mem);
-		char tab[500][450];
-		int i, j;
-		for(i = 0; i < 499; i++)
-			for(j = 0; j < 449; j++)
-				tab[i][j] = 0;
-		int dir_x, dir_y, dir_x2, dir_y2, x, y, x2, y2;		
-		if(argc == 1)
+		do
 		{
-			dir_x = 1;
-			dir_y = 0;
-			dir_x2 = -1;
-			dir_y2 = 0;
-			x = 150;
-			y = 375;
-			x2 = 450;
-			y2 = 375;
-		}
-		else
-		{
-			dir_x2 = 1;
-			dir_y2 = 0;
-			dir_x = -1;
-			dir_y = 0;
-			x2 = 150;
-			y2 = 375;
-			x = 450;
-			y = 375;
-		}
-		desenha_ecra();
-		while((x < 599 && x > 100 && y > 150 && y < 599) && (x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
-		{
-			if(!queueEmpty(&teclas))
+			clear_screen(BLACK, video_mem);
+			char tab[500][450];
+			int i, j;
+			for(i = 0; i < 499; i++)
+				for(j = 0; j < 449; j++)
+					tab[i][j] = 0;
+			int dir_x, dir_y, dir_x2, dir_y2, x, y, x2, y2;		
+			if(argc == 1)
 			{
-			tecla = queueGet(&teclas);
-				if(tecla  == 0x1)
-				{
-					envia_mensagem(base, tecla);
-					break;
-				}
-				else if(tecla == key_down && dir_x != 0)
-				{
-					dir_x = 0;
-					dir_y = 1;
-					envia_mensagem(base, key_down_default);
-				}
-				else if(tecla == key_up && dir_x != 0)
-				{
-					dir_x = 0;
-					dir_y = -1;
-					envia_mensagem(base, key_up_default);
-				}
-				else if(tecla == key_left && dir_y != 0)
-				{
-					dir_x = -1;
-					dir_y = 0;
-					envia_mensagem(base, key_left_default);
-				}
-				else if(tecla == key_right && dir_y != 0)
-				{
-					dir_x = 1;
-					dir_y = 0;
-					envia_mensagem(base, key_right_default);
-				}
-			}
-			
-		while(!queueEmpty(&rcv_char_queue))
-		{
-			char ch = queueGet(&rcv_char_queue);
-			if(ch  == 0x1)
-				{
-					break;
-				}
-				else if(ch == key_down_default && dir_x2 != 0)
-				{
-					dir_x2 = 0;
-					dir_y2 = 1;
-				}
-				else if(ch == key_up_default && dir_x2 != 0)
-				{
-					dir_x2 = 0;
-					dir_y2 = -1;
-				}
-				else if(ch == key_left_default && dir_y2 != 0)
-				{
-					dir_x2 = -1;
-					dir_y2 = 0;
-				}
-				else if(ch == key_right_default && dir_y2 != 0)
-				{
-					dir_x2 = 1;
-					dir_y2 = 0;
-				}
-		}		
-			
-			drawIntAt(rtc_p/1000, 830, 300, WHITE, BLACK, 2,video_mem);
-			int it = 0;
-			
-			if(argc == 1){
-				set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
-				set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
+				dir_x = 1;
+				dir_y = 0;
+				dir_x2 = -1;
+				dir_y2 = 0;
+				x = 150;
+				y = 375;
+				x2 = 450;
+				y2 = 375;
 			}
 			else
-			{			
-				set_pixel(x+dir_x, y + dir_y, LIGHT_BLUE, video_mem);
-				set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
-			}
-			
-			if((x+dir_x) == (x2+dir_x2) && (y+dir_y) == (y2+dir_y2))
-				break;
-			
-			if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1 || tab[(x+dir_x)-100][(y+dir_y)-100] == 2) //perde
 			{
-				if(argc == 1)
-					vidas--;
-				else
-					vidas2--;
-				break;
+				dir_x2 = 1;
+				dir_y2 = 0;
+				dir_x = -1;
+				dir_y = 0;
+				x2 = 150;
+				y2 = 375;
+				x = 450;
+				y = 375;
 			}
-				else
-					tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
-					
-			if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 2) //perde
+			desenha_ecra();
+			while((x < 599 && x > 100 && y > 150 && y < 599) && (x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
 			{
-				if(argc ==1)
-					vidas2--;
+				if(!queueEmpty(&teclas))
+				{
+				tecla = queueGet(&teclas);
+					if(tecla  == 0x1)
+					{
+						envia_mensagem(base, tecla);
+						break;
+					}
+					else if(tecla == key_down && dir_x != 0)
+					{
+						dir_x = 0;
+						dir_y = 1;
+						envia_mensagem(base, key_down_default);
+					}
+					else if(tecla == key_up && dir_x != 0)
+					{
+						dir_x = 0;
+						dir_y = -1;
+						envia_mensagem(base, key_up_default);
+					}
+					else if(tecla == key_left && dir_y != 0)
+					{
+						dir_x = -1;
+						dir_y = 0;
+						envia_mensagem(base, key_left_default);
+					}
+					else if(tecla == key_right && dir_y != 0)
+					{
+						dir_x = 1;
+						dir_y = 0;
+						envia_mensagem(base, key_right_default);
+					}
+				}
+				
+			while(!queueEmpty(&rcv_char_queue))
+			{
+				char ch = queueGet(&rcv_char_queue);
+				if(ch  == 0x1)
+					{
+						break;
+					}
+					else if(ch == key_down_default && dir_x2 != 0)
+					{
+						dir_x2 = 0;
+						dir_y2 = 1;
+					}
+					else if(ch == key_up_default && dir_x2 != 0)
+					{
+						dir_x2 = 0;
+						dir_y2 = -1;
+					}
+					else if(ch == key_left_default && dir_y2 != 0)
+					{
+						dir_x2 = -1;
+						dir_y2 = 0;
+					}
+					else if(ch == key_right_default && dir_y2 != 0)
+					{
+						dir_x2 = 1;
+						dir_y2 = 0;
+					}
+			}		
+				
+				drawIntAt(rtc_p/1000, 830, 300, WHITE, BLACK, 2,video_mem);
+				int it = 0;
+				
+				if(argc == 1){
+					set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
+					set_pixel(x2+dir_x2, y2 + dir_y2, LIGHT_BLUE, video_mem);
+				}
 				else
-					vidas--;
-				break;
+				{			
+					set_pixel(x+dir_x, y + dir_y, LIGHT_BLUE, video_mem);
+					set_pixel(x2+dir_x2, y2 + dir_y2, GREEN, video_mem);
+				}
+				
+				if((x+dir_x) == (x2+dir_x2) && (y+dir_y) == (y2+dir_y2))
+					break;
+				
+				if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1 || tab[(x+dir_x)-100][(y+dir_y)-100] == 2) //perde
+				{
+					if(argc == 1)
+						vidas--;
+					else
+						vidas2--;
+					break;
+				}
+					else
+						tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
+						
+				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 2) //perde
+				{
+					if(argc ==1)
+						vidas2--;
+					else
+						vidas--;
+					break;
+				}
+					else
+						tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 2;
+				
+				it++;
+				x = x + dir_x;
+				y = y + dir_y;
+				x2 = x2 + dir_x2;
+				y2 = y2 + dir_y2;
+				int a = rtc_p;
+				a += 10;
+				while(rtc_p < a);
 			}
-				else
-					tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 2;
-			
-			it++;
-			x = x + dir_x;
-			y = y + dir_y;
-			x2 = x2 + dir_x2;
-			y2 = y2 + dir_y2;
-			int a = rtc_p;
-			a += 10;
-			while(rtc_p < a);
 		}
-	}
-	while((vidas != 0 && vidas2!=0) && tecla != 0x1);
-	
-	draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
-	if(argc == 1)
-	{
-		drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-		if(vidas > 0)
-			draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+		while((vidas != 0 && vidas2!=0) && tecla != 0x1);
+		
+		draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
+		if(argc == 1)
+		{
+			drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
+			if(vidas > 0)
+				draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+			else
+				draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+		}
 		else
-			draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+		{
+			drawIntAt(vidas2*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
+			if(vidas2 > 0)
+				draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+			else
+				draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+		}
+		
+		rtc_p = 0;
+		while(rtc_p < 2000);
+		vidas = 3;
+		vidas2 = 3;
 	}
-	else
-	{
-		drawIntAt(vidas2*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-		if(vidas2 > 0)
-			draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
-		else
-			draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
-	}
-	
-	rtc_p = 0;
-	while(rtc_p < 2000);
-	vidas = 3;
-	vidas2 = 3;
-	}
-	//set_uart_register(base, SER_IER, 0);
+	set_uart_register(base, SER_IER, 0);
 	draw_menu();
 }
 
@@ -675,7 +675,6 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
-	init_serie();
 	queueInit(&teclas);
 	disable_irq(RTC_IRQ);
 	_go32_dpmi_seginfo old2;
