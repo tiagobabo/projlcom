@@ -38,3 +38,9 @@ Bool queueFull(Queue* q)
 {
 	return (q->cnt == QUEUE_MAX_SIZE);
 }
+
+void queueClear(Queue *q)
+{
+	while(!queueEmpty(q))
+		queueGet(q);
+}

@@ -582,6 +582,8 @@ void jogar()
 		vidas2 = 3;
 	}
 	set_uart_register(base, SER_IER, 0);
+	queueClear(&rcv_char_queue);
+	queueClear(&teclas);
 }
 
 void menu_jogar()
@@ -601,11 +603,13 @@ void menu_jogar()
 			{
 				argc = 1;
 				jogar();
+				break;
 			}
 			if(temp  == 0x3)
 			{
 				argc = 2;
 				jogar();
+				break;
 			}
 		}
 	}
