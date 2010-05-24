@@ -357,23 +357,48 @@ void jogar()
 {
 	Byte tecla;
 	rtc_p = 0;
+	int flag = 1;
+	clear_screen(BLACK, video_mem);
 	if(argc != 1)
 	{	
 		while(rcv_char_queue.cnt == 0)
 		{
+			draw_string("A ESPERAR PELO JOGADOR 1!", 200, 300, WHITE, BLACK, 3, video_mem);
 			if(!queueEmpty(&teclas))
 			{
 				tecla = queueGet(&teclas);
 				if(tecla  == 0x1)
 				{
 					envia_mensagem(base, tecla);
+					flag = 0;
 					break;
 				}
 			}
+			queueGet(&rcv_char_queue);
+			envia_mensagem(base, key_right);
 		}
 	}
 	else
-		envia_mensagem(base, key_right);
+	{
+		while(rcv_char_queue.cnt == 0)
+		{
+			draw_string("A ESPERAR PELO JOGADOR 2!", 200, 300, WHITE, BLACK, 3, video_mem);
+			if(!queueEmpty(&teclas))
+			{
+				tecla = queueGet(&teclas);
+				if(tecla  == 0x1)
+				{
+					envia_mensagem(base, tecla);
+					flag = 0;
+					break;
+				}
+			}
+			queueGet(&rcv_char_queue);
+			envia_mensagem(base, key_left);
+		}
+	}
+	if(flag)
+	{
 	do
 	{
 		clear_screen(BLACK, video_mem);
@@ -520,6 +545,7 @@ void jogar()
 		}
 	}
 	while((vidas != 0 && vidas2!=0) && tecla != 0x1);
+	
 	draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
 	if(argc == 1)
 	{
@@ -542,6 +568,37 @@ void jogar()
 	while(rtc_p < 2000);
 	vidas = 3;
 	vidas2 = 3;
+	}
+	draw_menu();
+}
+
+void menu_jogar()
+{
+	clear_screen(BLACK, video_mem);
+	draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
+	draw_string("MENU DE JOGO", HRES/2-150, 200, WHITE, BLACK, 2, video_mem);
+	draw_string("1 - CRIAR JOGO", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
+	draw_string("2 - JUNTAR-SE A JOGO", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+	do
+	{
+		if(!queueEmpty(&teclas))
+		{
+			temp = queueGet(&teclas);
+			if(temp  == 0x2)
+			{
+				argc = 1;
+				jogar();
+			}
+			if(temp  == 0x3)
+			{
+				argc = 2;
+				jogar();
+			}
+		}
+	}
+	while (temp != 1);
+	clear_screen(BLACK, video_mem);
 	draw_menu();
 }
 	
@@ -566,7 +623,7 @@ void draw_menu()
 				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
 				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
 				clear_screen(BLACK, video_mem);
-				jogar();
+				menu_jogar();
 			}
 			if(temp  == 0x3)
 			{
