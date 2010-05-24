@@ -345,7 +345,7 @@ void desenha_ecra()
 	draw_string("VIDAS J1:", 660, 200, WHITE, BLACK, 2, video_mem);
 	drawIntAt(vidas, 800, 200, WHITE, BLACK, 2,video_mem);
 	draw_string("VIDAS J2:", 660, 250, WHITE, BLACK, 2, video_mem);
-	drawIntAt(vidas2, 800, 200, WHITE, BLACK, 2,video_mem);
+	drawIntAt(vidas2, 800, 250, WHITE, BLACK, 2,video_mem);
 	draw_string("TEMPO JOGO:", 660, 300, WHITE, BLACK, 2, video_mem);
 }
 int argc;
@@ -456,7 +456,7 @@ void jogar()
 				}
 		}		
 			
-			drawIntAt(rtc_p/1000, 830, 250, WHITE, BLACK, 2,video_mem);
+			drawIntAt(rtc_p/1000, 830, 300, WHITE, BLACK, 2,video_mem);
 			int it = 0;
 			
 			set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
@@ -487,7 +487,7 @@ void jogar()
 			while(rtc_p < a);
 		}
 	}
-	while(vidas > 0 && tecla != 0x1);
+	while((vidas != 0 && vidas2!=0) && tecla != 0x1);
 	draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
 	draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
 	drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
