@@ -620,15 +620,16 @@ void menu_jogar()
 	
 void draw_menu()
 {
+	clear_screen(BLACK, video_mem);
+	draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
+	draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
+	draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
+	draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
 	do
 	{
-		clear_screen(BLACK, video_mem);
-		draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
-		draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
-		draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-		draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-		draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
-		draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+		
 		if(!queueEmpty(&teclas))
 		{
 			temp = queueGet(&teclas);
@@ -639,6 +640,7 @@ void draw_menu()
 				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
 				clear_screen(BLACK, video_mem);
 				menu_jogar();
+				break;
 			}
 			if(temp  == 0x3)
 			{
@@ -646,6 +648,7 @@ void draw_menu()
 				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLUE, 2, video_mem);
 				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
 				config_keys();
+				break;
 			}
 			if(temp  == 0x4)
 			{
@@ -653,6 +656,7 @@ void draw_menu()
 				draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
 				draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLUE, 2, video_mem);
 				read_pontuacoes();
+				break;
 			}
 		}
 	}
