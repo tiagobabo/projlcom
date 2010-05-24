@@ -361,13 +361,17 @@ void jogar()
 	clear_screen(BLACK, video_mem);
 	if(argc == 1)
 	{
+		disable_irq(COM1_IRQ);
 		base = COM1_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+		enable_irq(COM1_IRQ);
 	}
 	else if(argc != 1)
 	{
+		disable_irq(COM2_IRQ);
 		base = COM2_ADD;
 		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+		enable_irq(COM2_IRQ);
 	}
 	
 	if(argc != 1)
@@ -674,7 +678,6 @@ int main(int a, char* argv[])
 	init_serie();
 	queueInit(&teclas);
 	disable_irq(RTC_IRQ);
-	argc = a;
 	_go32_dpmi_seginfo old2;
 	disable_irq(KBD_IRQ);
 	install_asm_irq_handler(KBD_IRQ, asm_kbd, &old2);
