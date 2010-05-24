@@ -1,7 +1,6 @@
 #ifndef _SPRITE_H_
 #define _SPRITE_H_
 
-#include "video.h"
 #include "utypes.h"
 
 /** @defgroup sprite Sprite
@@ -53,7 +52,7 @@ char *read_xpm(char *map[], int *width, int *height);
  * memory whose address is "base".
  * Returns NULL on invalid pixmap.
  */
-Sprite * create_sprite(char *pic[], char *base);
+Sprite * create_sprite(char *pic[], char *base, int x, int y);
 
 /** Animate the sprite "fig" according to its attributes in memory, 
  * whose address is "base".

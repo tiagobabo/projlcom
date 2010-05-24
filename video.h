@@ -11,7 +11,6 @@
 #define CHAR_H 16
 
 
-
 /** @defgroup video Video 
  * @{
  *
