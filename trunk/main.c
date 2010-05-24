@@ -359,6 +359,18 @@ void jogar()
 	rtc_p = 0;
 	int flag = 1;
 	clear_screen(BLACK, video_mem);
+	if(argc == 1)
+	{
+		base = COM1_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	else if(argc != 1)
+	{
+		base = COM2_ADD;
+		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
+	}
+	init_serie();
+	
 	if(argc != 1)
 	{	
 		while(rcv_char_queue.cnt == 0)
@@ -659,18 +671,6 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
-	argc = a;
-	if(argc == 1)
-	{
-		base = COM1_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-	}
-	else if(argc != 1)
-	{
-		base = COM2_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-	}
-	init_serie();
 	disable_irq(RTC_IRQ);
 	argc = a;
 	_go32_dpmi_seginfo old2;
