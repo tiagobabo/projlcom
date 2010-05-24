@@ -588,7 +588,7 @@ int main(int a, char* argv[])
 	enable_irq(KBD_IRQ);
 	finalize_serie();
 	return 0;*/
-	/*
+	
 	if(argc == 1)
 	{
 		base = COM1_ADD;
