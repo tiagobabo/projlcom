@@ -197,7 +197,6 @@ void read_pontuacoes(){
 			}
 		}
 	}
-	draw_menu();
 }
 
 void change_key(Byte* key)
@@ -220,7 +219,6 @@ void change_key(Byte* key)
 			}
 		}
 	} while(last_sc != 0x1);
-	draw_menu();
 }
 void config_keys()
 {
@@ -585,7 +583,6 @@ void jogar()
 	}
 	set_uart_register(base, SER_IER, 0);
 	finalize_serie();
-	draw_menu();
 }
 
 void menu_jogar()
@@ -617,7 +614,6 @@ void menu_jogar()
 		}
 	}
 	while (temp != 1);
-	draw_menu();
 }
 	
 void draw_menu()
@@ -685,7 +681,7 @@ int main(int a, char* argv[])
 	init();
 	enable_irq(RTC_IRQ);
 	state = STOPPED;
-	draw_menu();
+	while(temp != 1) draw_menu();
 	finalize();	
 	
 	leave_graphics(&map);
