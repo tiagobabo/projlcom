@@ -550,7 +550,7 @@ void printbitssimple(int n) {
 
 int main(int a, char* argv[])
 {
-	argc = a;
+	/*argc = a;
 	if(argc == 1)
 	{
 		base = COM1_ADD;
@@ -587,7 +587,7 @@ int main(int a, char* argv[])
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
 	finalize_serie();
-	return 0;
+	return 0;*/
 	/*
 	if(argc == 1)
 	{
@@ -661,7 +661,7 @@ int main(int a, char* argv[])
 	
 	//getchar();
 	return 0;*/
-	/*init_serie();
+	init_serie();
 	
 	//enviar caracteres
 	fillScreen(RED);
@@ -710,5 +710,5 @@ int main(int a, char* argv[])
 	finalize_serie();
 	
 	system("CLS");
-	return 0;*/
+	return 0;
 }
