@@ -54,11 +54,6 @@ void clear_screen(char color, char *base);
 */
 void draw_line(int xi, int yi, int xf, int yf, int color, char *base);
 
-void drawIntAt(int num, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base );
-
-void drawStringAt(char* s, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base);
-
-void drawCharAt(char c, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base);
 /** @} end of video */ 
 
 #endif

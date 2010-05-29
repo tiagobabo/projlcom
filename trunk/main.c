@@ -18,12 +18,36 @@
 #include "serie.h"
 #include "pixmap.h"
 
+//Variaveis globais
+char *video_mem;
 int time_sound;
+Song* bgm;
+int song_note_ind = 0;
 Note* actual = NULL;
+Note* nota = NULL;
+int dur;
+
+typedef enum {INACTIVE, PLAY, PAUSE, STOPPED} MUSIC_STATE;
+volatile MUSIC_STATE state = INACTIVE;
+volatile int ms_count = 0;
+volatile int rtc_a = 0;
+volatile int rtc_p = 0;
+volatile int rtc_u = 0;
+volatile Word base;
+void get_time(int *hour, int *minute, int *second);
+void asm_kbd();
+int curH=0, curM=0, curS=0;
+extern Byte data_mode;
+
 int vidas = 3;
 int vidas2 = 3;
+int argc;
+
+//Queues a serem utilizadas
 Queue teclas;
-Queue keys_queue;
+Queue rcv_char_queue, send_char_queue;
+GQueue* musica;
+
 Byte temp;
 //Teclas Default
 Byte key_up = 0x11;
@@ -34,274 +58,25 @@ Byte key_up_default = 0x11;
 Byte key_down_default = 0x1f;
 Byte key_left_default = 0x1e;
 Byte key_right_default = 0x20;
-char *video_mem;
+
+
 _go32_dpmi_seginfo old_rtc_irq;
-Song* bgm;
-int song_note_ind = 0;
+_go32_dpmi_seginfo old_serial_irq;
 
 #define HLT __asm__ __volatile__("HLT")
 #define STI __asm__ __volatile__("STI")
 #define CLI __asm__ __volatile__("CLI")
 
-void get_time(int *hour, int *minute, int *second);
-void asm_kbd();
-
-typedef enum {INACTIVE, PLAY, PAUSE, STOPPED} MUSIC_STATE;
-volatile MUSIC_STATE state = INACTIVE;
-volatile int ms_count = 0;
-
-Queue rcv_char_queue, send_char_queue;
-volatile Word base;
-_go32_dpmi_seginfo old_serial_irq;
-
-void serial_isr(void)
-{
-	int ch; Bool not_full;
-	Byte st = inportb(base + SER_IIR) & INT_ID;
-	switch(st)
-	{
-		case INT_ST: return;
-
-		case RX_INT:
-			// queuePut(&rcv_char_queue, inportb(base + SER_DATA));
-			do not_full = queuePut(&rcv_char_queue, inportb(base + SER_DATA));
-			while (not_full && (inportb(base + SER_LSR) & RX_RDY));
-			
-			break;
-
-		case TX_INT:
-			// ch = queueGet(&send_char_queue);
-			// if(ch != -1) outportb(base + SER_DATA, ch);
-			do
-			{
-				ch = queueGet(&send_char_queue);
-				if(ch != -1) outportb(base + SER_DATA, ch);
-			}
-			while(ch != -1 && (inportb(base + SER_LSR) & TX_RDY));
-			
-			break;
-	}
-
-	outportb(PIC1_CMD, EOI);
-}
-
-
-void init_serie()
-{
-	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
-	install_c_irq_handler(serial_irq, serial_isr, &old_serial_irq);
-	
-	//inicializar IER
-	set_uart_register(base, SER_IER, RX_INT_EN | TX_INT_EN);
-
-	unmask_pic(serial_irq);
-}
-
-void print_bin(Byte b)
-{
-	int offset;
-	for(offset = 7; offset >= 0; offset--)
-		printf("%i", (b >> offset) & 1);
-}
-
-volatile Word base;
-
-void finalize_serie()
-{
-	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
-	mask_pic(serial_irq);
-	set_uart_register(base, SER_IER, 0);
-	reinstall_c_irq_handler(serial_irq, &old_serial_irq);
-}
-
-volatile int rtc_a = 0;
-volatile int rtc_p = 0;
-volatile int rtc_u = 0;
-
-GQueue* musica;
-Note* nota = NULL;
-int dur;
-Queue* apontQueue;
-int curH=0, curM=0, curS=0;
-extern Byte data_mode;
-void draw_menu();
-
+//Estrutura do array de Pontuacoes
 typedef struct {
 	char* nome;
 	int pontua;
 } Pontuacoes;
 Pontuacoes pontuacao[10];
 
-Queue rcv_queue;
-
 volatile Word base;
 
-void le_ficheiro_pontuacoes(){
-	char line[100];
-	int pont;
-	FILE *file;
-	file=fopen("pont.txt", "r");
-	if(file == NULL){
-		printf("file not found\n");
-		exit(0);
-	}
-	else{
-		int i = 0;
-		while(!feof(file)){
-		fgets(line, 100, file);
-		if(line[strlen(line)-1] == '\n')
-			line[strlen(line)-1] = '\0';
-		pontuacao[i].nome = malloc (strlen(line)*sizeof(char));
-		strcpy(pontuacao[i].nome, line);
-
-		fgets(line, 100, file);
-		pont = atoi(line);
-		pontuacao[i].pontua = pont;
-		i++;
-		}
-		if(i != 10){
-			while(i<10){
-			pontuacao[i].nome = "";
-			pontuacao[i].pontua = 0;
-			i++;
-			}
-		}
-		fclose(file);
-	}
-}
-
-void mostra_pontuacoes(){
-	clear_screen(BLACK, video_mem);
-	draw_string("Quadro de Pontuacoes", HRES/2-200, 100, GREEN, BLACK, 3, video_mem);
-	int i = 0;
-	
-	while(i<10)
-	{
-		if(strcmp(pontuacao[i].nome, ""))
-		{
-			drawIntAt(i+1, HRES/2-185, 250+(20*i), WHITE, BLACK, 1 , video_mem);
-			draw_string("-", HRES/2-165, 250+(20*i), WHITE, BLACK, 1, video_mem);
-			draw_string(pontuacao[i].nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
-			drawIntAt(pontuacao[i].pontua, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
-		}
-		i++;
-	}
-	while(1)
-	{
-		if(!queueEmpty(&teclas))
-		{
-			Byte tecla = queueGet(&teclas);
-			if(tecla  == 0x1)
-			{
-				break;
-			}
-		}
-	}
-}
-
-
-void actualiza_pontuacao(int p)
-{
-	int ind, b;
-	int i = 0;
-	int a = 0;
-	char name[3];
-	for(ind = 0; ind < 10 ; ind++)
-	{ 
-		if(pontuacao[ind].pontua < p)
-			{
-				b = ind;
-				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, VRES/2 - 40, PURPLE, BLACK, 2, video_mem);
-				drawCharAt( 65, HRES/2 - 60, VRES/2, 15, 0, 2, video_mem);
-				drawCharAt( 65, HRES/2 - 60 + 0*25, VRES/2, 15, 0, 2, video_mem);
-				while(1)
-				{
-					
-					if( !queueEmpty(&teclas))
-					{
-						char kbd_char = queueGet(&teclas);
-						if( kbd_char == 1 ) 
-						{ 
-							break; 
-						}
-						if( kbd_char  == 28 )
-						{
-							 name[a] = 65+abs(i)%25;
-							 i=0;
-							 a++;
-							 if( a >= 3 ) break;
-							drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-						}
-
-						if(kbd_char == key_up)
-						{
-							i++;
-							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-						}
-						else if( kbd_char == key_down)
-						{
-							i--;
-							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-						}
-					}		
-				}
-				name[3] = '\0';
-				int w;
-				Pontuacoes temp;
-				for(w = 9; w > b; w--)
-				{
-					pontuacao[w] = pontuacao[w-1];
-				}
-				temp.pontua = p;
-				temp.nome = name;
-				pontuacao[b] = temp;
-				break;
-			}
-	}
-}
-
-
-
-void change_key(Byte* key)
-{
-	Byte last_sc = 0;
-	do
-	{
-		if(!queueEmpty(&teclas))
-		{
-			last_sc = queueGet(&teclas);
-			if(last_sc == 0x2a)
-				last_sc = queueGet(&teclas);
-			if(!(last_sc >> 7)) // Ignorar a Release.
-			{
-				if(last_sc != 0x1)
-				{
-					*key = last_sc;
-					break;
-				}
-			}
-		}
-	} while(last_sc != 0x1);
-}
-void config_keys()
-{
-	clear_screen(BLACK, video_mem);
-	draw_string("Insira a nova tecla esquerda:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
-	change_key(&key_left);
-	
-	clear_screen(BLACK, video_mem);
-	draw_string("Insira a nova tecla direita:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
-	change_key(&key_right);
-	
-	clear_screen(BLACK, video_mem);
-	draw_string("Insira a nova tecla cima:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
-	change_key(&key_up);
-	
-	clear_screen(BLACK, video_mem);
-	draw_string("Insira a nova tecla baixo:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
-	change_key(&key_down);
-}
-
+//handler RTC
 void rtc_irq_handler(void)
 {
 	Byte cause = read_rtc(RTC_STAT_C);
@@ -351,19 +126,279 @@ void rtc_irq_handler(void)
 	outportb(PIC2_CMD, EOI);
 }
 
+void serial_isr(void)
+{
+	int ch; Bool not_full;
+	Byte st = inportb(base + SER_IIR) & INT_ID;
+	switch(st)
+	{
+		case INT_ST: return;
+
+		case RX_INT:
+			do not_full = queuePut(&rcv_char_queue, inportb(base + SER_DATA));
+			while (not_full && (inportb(base + SER_LSR) & RX_RDY));
+			
+			break;
+
+		case TX_INT:
+			do
+			{
+				ch = queueGet(&send_char_queue);
+				if(ch != -1) outportb(base + SER_DATA, ch);
+			}
+			while(ch != -1 && (inportb(base + SER_LSR) & TX_RDY));
+			
+			break;
+	}
+
+	outportb(PIC1_CMD, EOI);
+}
+
+//Inicializacao do porto de serie
+void init_serie()
+{
+	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
+	install_c_irq_handler(serial_irq, serial_isr, &old_serial_irq);
+	
+	//inicializar IER
+	set_uart_register(base, SER_IER, RX_INT_EN | TX_INT_EN);
+
+	unmask_pic(serial_irq);
+}
+
+//Finalizacao do porto de serie
+void finalize_serie()
+{
+	int serial_irq = ((base == COM1_ADD) ? COM1_IRQ : COM2_IRQ);
+	mask_pic(serial_irq);
+	set_uart_register(base, SER_IER, 0);
+	reinstall_c_irq_handler(serial_irq, &old_serial_irq);
+}
+//Escre as Pontuacoes num ficheiro
+void escreve_ficheiro_pontuacoes(){
+	
+	FILE *fp;
+    int i;
+	    fp = fopen("pont.txt", "w");
+    if(fp == NULL)
+	{
+        perror("failed to open pont.txt");
+		return;
+    }
+	for(i=0; i< 10; i++)
+	{
+		char* str = malloc((strlen(pontuacao[i].nome)*sizeof(char)));
+		int pontos;
+		strcpy(str ,pontuacao[i].nome);
+		pontos = pontuacao[i].pontua;
+		if(!strcmp(str, "")) break;
+		if(i>0) 							//Todas as linhas excepto a primeira.
+			fwrite("\n", 1, 1, fp);
+		fwrite(str, 1, strlen(str), fp);
+		fwrite("\n", 1, 1, fp);
+		fprintf(fp, "%i", pontos);
+	}
+	fclose(fp);
+	
+}
+
+
+
+//Le apartir de um ficheiro as Pontuacoes guardadas anteriormente
+void le_ficheiro_pontuacoes(){
+	char line[100];
+	int pont;
+	FILE *file;
+	file=fopen("pont.txt", "r");
+	if(file == NULL){
+		int j;
+		for(j=0; j<10; j++)
+		{
+			pontuacao[j].nome = "";
+			pontuacao[j].pontua = 0;
+		}
+		return;
+	}
+	else{
+		int i = 0;
+		while(!feof(file)){
+		fgets(line, 100, file);
+		if(line[strlen(line)-1] == '\n')
+			line[strlen(line)-1] = '\0';
+		pontuacao[i].nome = malloc (strlen(line)*sizeof(char));
+		strcpy(pontuacao[i].nome, line);
+
+		fgets(line, 100, file);
+		pont = atoi(line);
+		pontuacao[i].pontua = pont;
+		i++;
+		}
+		if(i != 10){
+			while(i<10){
+			pontuacao[i].nome = "";		//Caso nao haja jogadores na posicao i o nome ficara por default "".
+			pontuacao[i].pontua = 0;
+			i++;
+			}
+		}
+		fclose(file);
+	}
+}
+
+//Mostra o quadro de pontuacoes no ecra.
+void mostra_pontuacoes(){
+	clear_screen(BLACK, video_mem);
+	draw_string("Quadro de Pontuacoes", HRES/2-200, 100, GREEN, BLACK, 3, video_mem);
+	int i = 0;
+	int j = 0;
+	
+	while(i<10)
+	{
+		if(strcmp(pontuacao[i].nome, ""))
+		{
+			drawIntAt(i+1, HRES/2-190, 250+(20*i), WHITE, BLACK, 1 , video_mem);
+			draw_string("-", HRES/2-165, 250+(20*i), WHITE, BLACK, 1, video_mem);
+			draw_string(pontuacao[i].nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+			drawIntAt(pontuacao[i].pontua, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+		}
+		else j++;
+		i++;
+	}
+	if(j==10)
+	{
+		draw_string("Ainda nao existem pontuacoes!", HRES/2-200, 400, WHITE, BLACK, 2, video_mem);
+	}
+	while(1)
+	{
+		if(!queueEmpty(&teclas))
+		{
+			Byte tecla = queueGet(&teclas);
+			if(tecla  == 0x1)
+			{
+				break;
+			}
+		}
+	}
+}
+
+//Verifica se a pontuacao obtida e suficiente para entrar no quadro das pontuacoes e se sim insere-o.
+void actualiza_pontuacao(int p)
+{
+	int ind, b;
+	int i = 0;
+	int a = 0;
+	char name[3];
+	for(ind = 0; ind < 10 ; ind++)
+	{ 
+		if(pontuacao[ind].pontua < p)
+			{
+				b = ind;
+				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, VRES/2 - 40, PURPLE, BLACK, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60, VRES/2, 15, 0, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60 + 0*25, VRES/2, 15, 0, 2, video_mem);
+				while(1)
+				{
+					
+					if( !queueEmpty(&teclas))
+					{
+						char kbd_char = queueGet(&teclas);
+						if( kbd_char == 1 ) 
+						{ 
+							break; 
+						}
+						if( kbd_char  == 28 )
+						{
+							 name[a] = 65+abs(i)%25;
+							 i=0;
+							 a++;
+							 if( a >= 3 ) break;
+							drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+
+						if(kbd_char == key_up)
+						{
+							i++;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+						else if( kbd_char == key_down)
+						{
+							i--;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+					}		
+				}
+				name[3] = '\0';
+				int w;
+				Pontuacoes temp_pont;
+				for(w = 9; w > b; w--)
+				{
+					pontuacao[w] = pontuacao[w-1];
+				}
+				temp_pont.pontua = p;
+				temp_pont.nome = name;
+				pontuacao[b] = temp_pont;				
+				break;
+			}
+	}
+	escreve_ficheiro_pontuacoes();
+	le_ficheiro_pontuacoes();
+}
+
+//Funcao para modificar as teclas de jogo
+void change_key(Byte* key)
+{
+	Byte last_sc = 0;
+	do
+	{
+		if(!queueEmpty(&teclas))
+		{
+			last_sc = queueGet(&teclas);
+			if(last_sc == 0x2a)
+				last_sc = queueGet(&teclas);
+			if(!(last_sc >> 7)) // Ignorar a Release.
+			{
+				if(last_sc != 0x1)
+				{
+					*key = last_sc;
+					break;
+				}
+			}
+		}
+	} while(last_sc != 0x1);
+}
+
+//menu de configuracao das teclas de jogo
+void config_keys()
+{
+	clear_screen(BLACK, video_mem);
+	draw_string("Insira a nova tecla esquerda:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
+	change_key(&key_left);
+	
+	clear_screen(BLACK, video_mem);
+	draw_string("Insira a nova tecla direita:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
+	change_key(&key_right);
+	
+	clear_screen(BLACK, video_mem);
+	draw_string("Insira a nova tecla cima:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
+	change_key(&key_up);
+	
+	clear_screen(BLACK, video_mem);
+	draw_string("Insira a nova tecla baixo:", HRES/2-250, 200, WHITE, BLACK, 2, video_mem);
+	change_key(&key_down);
+}
+
+//insere as notas na queue musica.
 void song_pre_load_queue(int n_notes)
 {
 	for(song_note_ind = 0; song_note_ind < n_notes; song_note_ind++)
 		putGQueue(musica, &(bgm->notes[song_note_ind]));
 }
 
+//Inicializacao do programa
 void init()
 {
-	//disable_irq(RTC_IRQ);
 	_go32_dpmi_seginfo old_irq;
 	install_c_irq_handler(RTC_IRQ, rtc_irq_handler, &old_irq);
 	old_rtc_irq = old_irq;
-	//enable_irq(RTC_IRQ);
 	
 	bgm = song_load("song_cat.txt");
 	musica = newGQueue(100, sizeof(Note));
@@ -375,6 +410,7 @@ void init()
 	write_rtcv(RTC_STAT_B, stat_b | RTC_UIE | RTC_AIE | RTC_PIE);
 }
 
+//Finalizacao do programa
 void finalize()
 {
 	state = INACTIVE;
@@ -388,6 +424,7 @@ void finalize()
 	deleteGQueue(musica);
 }
 
+//desenha o ecra de jogo
 void desenha_ecra()
 {
 	//desenha area de jogo
@@ -402,10 +439,14 @@ void desenha_ecra()
 	draw_line(650, 600, 923, 600, WHITE, video_mem); 
 	draw_line(923, 150, 923, 600, WHITE, video_mem); 
 	
-	create_sprite(board_xpm, video_mem,350,375);
+	//desenha logotipo
 	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
+	
+	//desenha sprite do tabuleiro de jogo
+	create_sprite(board_xpm, video_mem,350,375);
 	create_sprite(board_aux_xpm, video_mem,787,376);
 	
+	//desenha info
 	draw_string("VIDAS J1:", 660, 200, WHITE, BLACK, 2, video_mem);
 	drawIntAt(vidas, 800, 200, WHITE, BLACK, 2,video_mem);
 	draw_string("VIDAS J2:", 660, 250, WHITE, BLACK, 2, video_mem);
@@ -413,11 +454,10 @@ void desenha_ecra()
 	draw_string("TEMPO JOGO:", 660, 300, WHITE, BLACK, 2, video_mem);
 }
 
-int argc;
+//Modo de jogo multiplayer (2 jogadores) atraves do porto de serie
 void jogar_multiplayer()
 {
 	queueClear(&rcv_char_queue);
-	//queueClear(&teclas);
 	Byte tecla;
 	int flag = 1;
 	clear_screen(BLACK, video_mem);
@@ -482,7 +522,7 @@ void jogar_multiplayer()
 		do
 		{
 			clear_screen(BLACK, video_mem);
-			char tab[500][450];
+			int tab[500][450];
 			int i, j;
 			for(i = 0; i < 499; i++)
 				for(j = 0; j < 449; j++)
@@ -682,12 +722,12 @@ void jogar_multiplayer()
 	finalize_serie();
 }
 
+//Modo de jogo singleplayer (1 jogador) contra Inteligencia Artificial programada.
 void jogar_singleplayer()
 {
-	int check_int = 100;
+	int check_int = 300;
 	int check_flag= 0;
 	queueClear(&rcv_char_queue);
-	//queueClear(&teclas);
 	Byte tecla;
 	clear_screen(BLACK, video_mem);
 	{
@@ -695,7 +735,7 @@ void jogar_singleplayer()
 		do
 		{
 			clear_screen(BLACK, video_mem);
-			char tab[500][450];
+			int tab[500][450];
 			int i, j;
 			for(i = 1; i < 499; i++)
 				for(j = 1; j < 449; j++)
@@ -761,7 +801,7 @@ void jogar_singleplayer()
 					check_flag = 1;
 					srand (time(NULL));
 					check = rand() % 4;
-					check_int = 100;
+					check_int = 300;
 				}
 				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
 				{
@@ -893,6 +933,7 @@ void jogar_singleplayer()
 	}
 }
 
+//Menu de escolha do modo de jogo.
 void menu_jogar()
 {
 	Byte temp;
@@ -930,7 +971,8 @@ void menu_jogar()
 	}
 	while (temp != 1);
 }
-	
+
+//Desenha o menu principal
 void draw_menu()
 {
 	clear_screen(BLACK, video_mem);
@@ -965,25 +1007,14 @@ void draw_menu()
 	}
 	while (temp != 1);
 }
-void printbitssimple(int n) {
-	unsigned int i;
-	i = 1<<7;
-
-	while (i > 0) {
-		if (n & i)
-			printf("1");
-		else
-			printf("0");
-		i >>= 1;
-	}
-	printf("\n");
-}
 
 int main(int a, char* argv[])
 {
-	queueInit(&teclas);
+	queueInit(&teclas); //Incializacao da queue do teclado
+	
 	disable_irq(RTC_IRQ);
 	_go32_dpmi_seginfo old2;
+	
 	disable_irq(KBD_IRQ);
 	install_asm_irq_handler(KBD_IRQ, asm_kbd, &old2);
 	enable_irq(KBD_IRQ);
@@ -1006,127 +1037,4 @@ int main(int a, char* argv[])
 	reinstall_asm_irq_handler(KBD_IRQ, &old2);
 	enable_irq(KBD_IRQ);
 	return 0;
-	
-/*	if(argc == 1)
-	{
-		base = COM1_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-	}
-	else if(argc != 6)
-	{
-		base = COM2_ADD;
-		init_uart(base, 9600, 8, 1, PAR_NONE, true, true, true);
-		printf("ERRO!\n");
-		//return 0;
-	}
-	else
-	{
-		base = (atoi(argv[1]) == 1) ? COM1_ADD : COM2_ADD;
-		//Byte parity;
-		init_uart(base, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), true, true, true);
-	}
-
-	//mostrar informacao
-	//printf("UART -> COM%i", (base == COM1_ADD) ? 1 : 2);*/
-	
-	/*printf("\nDATA = "); print_bin(inportb(base + SER_DATA));
-	printf("\nIER = "); print_bin(inportb(base + SER_IER));
-	printf("\nIIR = "); print_bin(inportb(base + SER_IIR));
-	printf("\nLCR = "); print_bin(inportb(base + SER_LCR));
-	printf("\nMCR = "); print_bin(inportb(base + SER_MCR));
-	printf("\nLSR = "); print_bin(inportb(base + SER_LSR));
-	printf("\nMSR = "); print_bin(inportb(base + SER_MSR));
-	
-	printf("\nBaudrate - %d", get_baud(base));
-	
-	printf("\nParity - ");
-	Byte b = get_parity(base);
-	switch(b)
-	{
-		case PAR_NONE: printf("none"); break;
-		case PAR_ODD: printf("odd"); break;
-		case PAR_EVEN: printf("even"); break;
-		case PAR_HIGH: printf("high"); break;
-		case PAR_LOW: printf("low"); break;
-		default: break;
-	}
-	
-	printf("\nStop bits - %i", get_stop_bits(base));
-	printf("\nWord length - %i", get_nbits(base)); */
-	
-	/*char envia = 0;
-	char recebe;
-	
-	do
-	{
-		if(kbhit())
-		{
-			envia = getch();
-			printf("%c", envia);
-			envia_mensagem(base, envia);
-		}
-		
-		if (mensagem_espera(base))
-		{
-			recebe = recebe_mensagem(base);
-			putchar(recebe);
-			//printf("%c",recebe);
-		}
-		
-	} while (envia != 27);	
-	return 0;
-	
-	
-	//getchar();
-	return 0;*/
-	/*init_serie();
-	
-	//enviar caracteres
-	fillScreen(RED);
-	drawFrame("Enviado", GREEN, 0, 0, WIDTH, HEIGHT / 2);
-	drawFrame("Recebido", GREEN, 0, HEIGHT / 2, WIDTH, HEIGHT - HEIGHT / 2);
-	int x_env_pos = 1, y_env_pos = 2, x_rec_pos = 1, y_rec_pos = HEIGHT / 2 + 2;
-
-	char ch = 0;
-	do
-	{	
-		if(!queueEmpty(&rcv_char_queue))
-		{
-			char ch = queueGet(&rcv_char_queue);
-			printCharAt(ch, x_rec_pos, y_rec_pos, GREEN);
-			
-			//actualizar cursor
-			x_rec_pos++;
-			if(x_rec_pos == WIDTH - 1)
-			{
-				x_rec_pos = 1;
-				y_rec_pos++;
-				if(y_rec_pos == HEIGHT - 1) y_rec_pos = HEIGHT / 2 + 2;
-			}
-		}
-		
-		if(kbhit())
-		{
-			ch = getch();
-			printCharAt(ch, x_env_pos, y_env_pos, GREEN);
-			
-			//actualizar cursor
-			x_env_pos++;
-			if(x_env_pos == WIDTH - 1)
-			{
-				x_env_pos = 1;
-				y_env_pos++;
-				if(y_env_pos == HEIGHT / 2 - 1) y_env_pos = 2;
-			}
-			
-			//queuePut(&send_char_queue, ch);
-			envia_mensagem(base, ch);
-		}
-	}
-	while(ch != 27);
-	
-	finalize_serie();
-	
-	system("CLS");
-	return 0;*/
 }
