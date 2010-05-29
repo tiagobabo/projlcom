@@ -14,7 +14,6 @@
 #include "rtc.h"
 #include "GQueue.h"
 #include "song.h"
-#include "video-text.h"
 #include "queue.h"
 #include "serie.h"
 #include "pixmap.h"
@@ -141,7 +140,7 @@ void return_pontuacoes(){
 	char line[100];
 	int pont;
 	FILE *file;
-	file=fopen("pontuacoes.txt", "r");
+	file=fopen("pont.txt", "r");
 	if(file == NULL){
 		printf("file not found\n");
 		exit(0);
@@ -179,7 +178,6 @@ void read_pontuacoes(){
 	
 	while(i<10)
 	{
-		printf("%d\n", pontuacao[i].pontua);
 		char* nome;
 		int pont;
 		nome = malloc(sizeof(char)*(strlen(pontuacao[i].nome)+1));
@@ -308,7 +306,7 @@ void init()
 	bgm = song_load("song_cat.txt");
 	musica = newGQueue(100, sizeof(Note));
 	return_pontuacoes();
-	//song_pre_load_queue(100);
+	song_pre_load_queue(100);
 	
 	Byte stat_b = read_rtc(RTC_STAT_B);
 	data_mode = RTC_STAT_B & RTC_DM;
@@ -398,14 +396,13 @@ void actualiza_pontuacao(int p)
 				name[3] = '\0';
 				int w;
 				Pontuacoes temp;
-				for(w = b; w < 8; w++)
+				for(w = 9; w >= b; w--)
 				{
-					temp = pontuacao[w+1];
-					pontuacao[w+1] = pontuacao[w];
+					pontuacao[w] = pontuacao[w-1];
 				}
-				printf("AFASF: %d\n", pontuacao[b].pontua);
-				pontuacao[b].pontua = p;
-				strcpy(pontuacao[b].nome, name);
+				temp.pontua = p;
+				temp.nome = name;
+				pontuacao[b] = temp;
 				break;
 			}
 	}

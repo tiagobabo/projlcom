@@ -2,8 +2,8 @@
 
 all: proj.exe
 
-proj.exe: video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o video-text.o serie.o
-	gcc -Wall video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o video-text.o serie.o -o proj.exe
+proj.exe: video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serie.o
+	gcc -Wall video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serie.o -o proj.exe
 	
 video.o: video.c video.h utypes.h
 	gcc -c -Wall video.c
@@ -46,10 +46,7 @@ gqueue.o: GQueue.c GQueue.h
 	
 song.o: song.c song.h
 	gcc -Wall -c song.c		
-	
-video-text.o: video-text.c video-text.h
-	gcc -Wall -c video-text.c
-	
+		
 serie.o: serie.c serie.h
 	gcc -Wall -c serie.c
 	
