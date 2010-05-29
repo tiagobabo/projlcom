@@ -411,7 +411,7 @@ void draw_string(char* s, int x_ori, int y_ori, int fore_color, int back_color, 
 	}
 }
 
-Sprite * create_sprite(char *pic[], char *base, int height_x, int vertical_y)
+Sprite * create_sprite(char *pic[], char *base, int horizontal_x, int vertical_y)
 {
 	Sprite *spr = (Sprite *)malloc(sizeof(Sprite)); // cria espaço para a Sprite
 	
@@ -419,8 +419,9 @@ Sprite * create_sprite(char *pic[], char *base, int height_x, int vertical_y)
 	
 	spr->map = read_xpm(pic, &width, &height); //leitura da figura correspondente à sprite
 	
-	spr->x = height_x;
-	spr->y = vertical_y;
+	spr->x = horizontal_x - (int)(width/2);
+	spr->y = vertical_y - (int)(height/2);
+	
 	spr->xspeed = randBetween(1,MAX_SPEED); 
 	spr->yspeed = randBetween(1,MAX_SPEED);
 	
