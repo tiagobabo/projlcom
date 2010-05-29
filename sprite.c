@@ -266,15 +266,6 @@ char table2[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-
-int auxiliar(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
-void put_int_at(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
-void draw_char_at(char c, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
-void draw_string(char *text, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
-void draw_time(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base);
-
-int pontos;
-
 char *read_xpm(char *map[], int *wd, int *ht)
 {
   __attribute__((unused)) static char read_xpm_jcard;
@@ -346,38 +337,7 @@ char *read_xpm(char *map[], int *wd, int *ht)
   return pix;
 }
 
-int randBetween(int lim_inf, int lim_sup)
-{	
-	static int seed = 0;
-	int num = 0;
-	
-	while(num == 0) // para nao devolver valores nulos
-	{
-		srand( time(NULL) + seed++ );
-		num = rand() % (lim_sup - lim_inf + 1) + lim_inf;
-	}
-	
-	return num;
-}
-
-int auxiliar(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base)
-{
-	int new_char;
-	new_char = num%10;
-	num /= 10;
-	int c=1;
-	
-	if(num>0) c = 1 + auxiliar(num,x,y,fore_color, back_color, char_scale, video_base);
-		draw_char_at(0x30+new_char,x,y,fore_color, back_color, char_scale, video_base);
-	return c;
-}
-
-void put_int_at(int num, int x, int y, int fore_color, int back_color, int char_scale, char *video_base)
-{
-	auxiliar(num,x,y,fore_color, back_color, char_scale,video_base);
-}
-
-void draw_char_at(char c, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base)
+void drawCharAt(char c, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base)
 {
 	char *char_def = table2 + c*CHR_H; 
 	
@@ -406,7 +366,7 @@ void draw_char_at(char c, int x_ori, int y_ori, int fore_color, int back_color, 
 void draw_string(char* s, int x_ori, int y_ori, int fore_color, int back_color, int char_scale, char* video_base) {
 	int i=0;
 	for(i=0; s[i]; i++) {
-		draw_char_at(s[i], x_ori, y_ori, fore_color, back_color, char_scale, video_base);
+		drawCharAt(s[i], x_ori, y_ori, fore_color, back_color, char_scale, video_base);
 		x_ori += 8*char_scale;
 	}
 }
@@ -422,84 +382,14 @@ Sprite * create_sprite(char *pic[], char *base, int horizontal_x, int vertical_y
 	spr->x = horizontal_x - (int)(width/2);
 	spr->y = vertical_y - (int)(height/2);
 	
-	spr->xspeed = randBetween(1,MAX_SPEED); 
-	spr->yspeed = randBetween(1,MAX_SPEED);
-	
 	spr->width = width;
 	spr->height = height;
-	
-	spr->count = 3;
 	
 	draw_sprite(spr, base);
 	
 	return spr;
 }
 
-int check_colision(Sprite *spr, char *base)
-{
-	// limite esquerdo e direito do ecrã
-	if((get_pixel(spr->x + spr->width + spr->xspeed , spr->y, base) == BLUE) || 
-	(get_pixel(spr->x + spr->xspeed , spr->y, base) == BLUE))
-		return H_HIT; 
-
-	// limites superior e inferior do ecrã
-	if(get_pixel(spr->x, spr->y + spr->yspeed, base) == BLUE)
-		return V_HIT;
-		
-	if(get_pixel(spr->x, spr->y + spr->height + spr->yspeed, base) == BLUE) {
-		spr->count--;
-		return V_HIT;
-	}
-		
-	//colisao com o bloco
-	int i;
-	for(i=spr->x; i<=spr->x + spr->width; i++)
-	{
-		if(get_pixel(i,spr->y + spr->height + spr->yspeed, base) == WHITE)
-			return BLOCK_HIT;
-	}
-		
-	return 0;
-}
-
-int animate_sprite(Sprite *spr, char *base)
-{
-	erase_sprite(spr,base);
-	
-	int newxspeed = randBetween(1,MAX_SPEED);
-	int newyspeed = randBetween(1,MAX_SPEED);
-	int colision = check_colision(spr, base);
-	
-	if(colision == H_HIT) 
-	{
-		if(spr->xspeed > 0) 
-			spr->xspeed = -newxspeed;
-		else spr->xspeed = newxspeed;
-	}
-	
-	if(colision == V_HIT) 
-	{
-		if(spr->yspeed > 0) 
-			spr->yspeed = -newyspeed;
-		else spr->yspeed = newyspeed;
-	}
-	
-	if(colision == BLOCK_HIT)
-	{
-		pontos++;
-		return -1;
-	}
-	
-	//actualiza as coordenadas
-	spr->x += spr->xspeed;
-	spr->y += spr->yspeed;
-	
-	//desenha
-	draw_sprite(spr, base);
-	
-	
-	return 0;
-}
 
 void destroy_sprite(Sprite *spr, char *base)
 {
@@ -538,7 +428,7 @@ void drawIntAt(int num, int x_ori, int y_ori, int fore_color, int back_color, in
 	if( num == 0 )
 	{
 	x_ori=x_ori+8*char_scale*1;
-	draw_char_at('0', x_ori, y_ori, fore_color, back_color, char_scale, video_base);
+	drawCharAt('0', x_ori, y_ori, fore_color, back_color, char_scale, video_base);
 	}
 	
 	while (k>0) {
@@ -549,7 +439,7 @@ void drawIntAt(int num, int x_ori, int y_ori, int fore_color, int back_color, in
 	x_ori=x_ori+8*char_scale*cnt;
 	while (cnt>0) {
 		cnt--;
-		draw_char_at((char)(num%10+'0'), x_ori, y_ori, fore_color, back_color, char_scale, video_base);
+		drawCharAt((char)(num%10+'0'), x_ori, y_ori, fore_color, back_color, char_scale, video_base);
 		num/=10;
 		x_ori-=8*char_scale;
 	}
