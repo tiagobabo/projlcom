@@ -136,7 +136,7 @@ Queue rcv_queue;
 
 volatile Word base;
 
-void return_pontuacoes(){
+void le_ficheiro_pontuacoes(){
 	char line[100];
 	int pont;
 	FILE *file;
@@ -157,34 +157,33 @@ void return_pontuacoes(){
 		fgets(line, 100, file);
 		pont = atoi(line);
 		pontuacao[i].pontua = pont;
-
 		i++;
 		}
-		//if(i != 10){
-		//	while(i<10){
-		//	pontuacao[i].nome = NULL;
-		//	pontuacao[i].pontua = NULL;
-		//	i++;
-		//	}
-		//}
+		if(i != 10){
+			while(i<10){
+			pontuacao[i].nome = "";
+			pontuacao[i].pontua = 0;
+			i++;
+			}
+		}
 		fclose(file);
 	}
 }
 
-void read_pontuacoes(){
+void mostra_pontuacoes(){
 	clear_screen(BLACK, video_mem);
 	draw_string("Quadro de Pontuacoes", HRES/2-200, 100, GREEN, BLACK, 3, video_mem);
 	int i = 0;
 	
 	while(i<10)
 	{
-		char* nome;
-		int pont;
-		nome = malloc(sizeof(char)*(strlen(pontuacao[i].nome)+1));
-		strcpy(nome,pontuacao[i].nome);
-		pont = pontuacao[i].pontua;
-		draw_string(nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
-		drawIntAt(pont, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+		if(strcmp(pontuacao[i].nome, ""))
+		{
+			drawIntAt(i+1, HRES/2-185, 250+(20*i), WHITE, BLACK, 1 , video_mem);
+			draw_string("-", HRES/2-165, 250+(20*i), WHITE, BLACK, 1, video_mem);
+			draw_string(pontuacao[i].nome, HRES/2-150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+			drawIntAt(pontuacao[i].pontua, HRES/2+150, 250+(20*i), WHITE, BLACK, 1, video_mem);
+		}
 		i++;
 	}
 	while(1)
@@ -199,6 +198,69 @@ void read_pontuacoes(){
 		}
 	}
 }
+
+
+void actualiza_pontuacao(int p)
+{
+	int ind, b;
+	int i = 0;
+	int a = 0;
+	char name[3];
+	for(ind = 0; ind < 10 ; ind++)
+	{ 
+		if(pontuacao[ind].pontua < p)
+			{
+				b = ind;
+				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, VRES/2 - 40, PURPLE, BLACK, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60, VRES/2, 15, 0, 2, video_mem);
+				drawCharAt( 65, HRES/2 - 60 + 0*25, VRES/2, 15, 0, 2, video_mem);
+				while(1)
+				{
+					
+					if( !queueEmpty(&teclas))
+					{
+						char kbd_char = queueGet(&teclas);
+						if( kbd_char == 1 ) 
+						{ 
+							break; 
+						}
+						if( kbd_char  == 28 )
+						{
+							 name[a] = 65+abs(i)%25;
+							 i=0;
+							 a++;
+							 if( a >= 3 ) break;
+							drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+
+						if(kbd_char == key_up)
+						{
+							i++;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+						else if( kbd_char == key_down)
+						{
+							i--;
+							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
+						}
+					}		
+				}
+				name[3] = '\0';
+				int w;
+				Pontuacoes temp;
+				for(w = 9; w > b; w--)
+				{
+					pontuacao[w] = pontuacao[w-1];
+				}
+				temp.pontua = p;
+				temp.nome = name;
+				pontuacao[b] = temp;
+				break;
+			}
+	}
+}
+
+
 
 void change_key(Byte* key)
 {
@@ -305,7 +367,7 @@ void init()
 	
 	bgm = song_load("song_cat.txt");
 	musica = newGQueue(100, sizeof(Note));
-	return_pontuacoes();
+	le_ficheiro_pontuacoes();
 	song_pre_load_queue(100);
 	
 	Byte stat_b = read_rtc(RTC_STAT_B);
@@ -340,74 +402,16 @@ void desenha_ecra()
 	draw_line(650, 600, 923, 600, WHITE, video_mem); 
 	draw_line(923, 150, 923, 600, WHITE, video_mem); 
 	
+	create_sprite(board_xpm, video_mem,350,375);
+	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
+	create_sprite(board_aux_xpm, video_mem,787,376);
+	
 	draw_string("VIDAS J1:", 660, 200, WHITE, BLACK, 2, video_mem);
 	drawIntAt(vidas, 800, 200, WHITE, BLACK, 2,video_mem);
 	draw_string("VIDAS J2:", 660, 250, WHITE, BLACK, 2, video_mem);
 	drawIntAt(vidas2, 800, 250, WHITE, BLACK, 2,video_mem);
 	draw_string("TEMPO JOGO:", 660, 300, WHITE, BLACK, 2, video_mem);
 }
-
-void actualiza_pontuacao(int p)
-{
-	int ind, b;
-	int i = 0;
-	int a = 0;
-	char name[3];
-	for(ind = 0; ind < 10 ; ind++)
-	{ 
-		if(pontuacao[ind].pontua < p)
-			{
-				b = ind;
-				draw_string("PARABENS, NOVO RECORDE!", HRES/2-350, VRES/2 - 40, PURPLE, BLACK, 2, video_mem);
-				drawCharAt( 65, HRES/2 - 60, VRES/2, 15, 0, 2, video_mem);
-				drawCharAt( 65, HRES/2 - 60 + 0*25, VRES/2, 15, 0, 2, video_mem);
-				while(1)
-				{
-					
-					if( !queueEmpty(&teclas))
-					{
-						char kbd_char = queueGet(&teclas);
-						if( kbd_char == 1 ) 
-						{ 
-							break; 
-						}
-						if( kbd_char  == 28 )
-						{
-						 name[a] = 65+abs(i)%25;
-						 i=0;
-						 a++;
-						 if( a >= 3 ) break;
-						drawCharAt( 65, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-					}
-
-						switch( kbd_char )
-						{
-						case 80:
-							i++;
-							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-						break;
-						case 72:
-							i--;
-							drawCharAt( 65+abs(i)%25, HRES/2 - 60 + a*25, VRES/2, 15, 0, 2, video_mem);
-						break;
-						}
-					}		
-				}
-				name[3] = '\0';
-				int w;
-				Pontuacoes temp;
-				for(w = 9; w >= b; w--)
-				{
-					pontuacao[w] = pontuacao[w-1];
-				}
-				temp.pontua = p;
-				temp.nome = name;
-				pontuacao[b] = temp;
-				break;
-			}
-	}
-}
-
 
 int argc;
 void jogar_multiplayer()
@@ -492,7 +496,7 @@ void jogar_multiplayer()
 				dir_y2 = 0;
 				x = 150;
 				y = 375;
-				x2 = 450;
+				x2 = 550;
 				y2 = 375;
 			}
 			else
@@ -503,7 +507,7 @@ void jogar_multiplayer()
 				dir_y = 0;
 				x2 = 150;
 				y2 = 375;
-				x = 450;
+				x = 550;
 				y = 375;
 			}
 			desenha_ecra();
@@ -543,34 +547,34 @@ void jogar_multiplayer()
 					}
 				}
 				
-			while(!queueEmpty(&rcv_char_queue))
-			{
-				char ch = queueGet(&rcv_char_queue);
-				if(ch  == 0x1)
-					{
-						break;
-					}
-					else if(ch == key_down_default && dir_x2 != 0)
-					{
-						dir_x2 = 0;
-						dir_y2 = 1;
-					}
-					else if(ch == key_up_default && dir_x2 != 0)
-					{
-						dir_x2 = 0;
-						dir_y2 = -1;
-					}
-					else if(ch == key_left_default && dir_y2 != 0)
-					{
-						dir_x2 = -1;
-						dir_y2 = 0;
-					}
-					else if(ch == key_right_default && dir_y2 != 0)
-					{
-						dir_x2 = 1;
-						dir_y2 = 0;
-					}
-			}		
+				while(!queueEmpty(&rcv_char_queue))
+				{
+					char ch = queueGet(&rcv_char_queue);
+					if(ch  == 0x1)
+						{
+							break;
+						}
+						else if(ch == key_down_default && dir_x2 != 0)
+						{
+							dir_x2 = 0;
+							dir_y2 = 1;
+						}
+						else if(ch == key_up_default && dir_x2 != 0)
+						{
+							dir_x2 = 0;
+							dir_y2 = -1;
+						}
+						else if(ch == key_left_default && dir_y2 != 0)
+						{
+							dir_x2 = -1;
+							dir_y2 = 0;
+						}
+						else if(ch == key_right_default && dir_y2 != 0)
+						{
+							dir_x2 = 1;
+							dir_y2 = 0;
+						}
+				}		
 				
 				drawIntAt(rtc_p/1000, 830, 300, WHITE, BLACK, 2,video_mem);
 				int it = 0;
@@ -591,9 +595,17 @@ void jogar_multiplayer()
 				if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1) //perde
 				{
 					if(argc == 1)
+					{
 						vidas--;
+						create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
+						x=200; y=200;
+					}
 					else
+					{
 						vidas2--;
+						create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
+						x2=200; y2=200;
+					}
 					break;
 				}
 					else
@@ -602,9 +614,17 @@ void jogar_multiplayer()
 				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
 				{
 					if(argc ==1)
+					{
 						vidas2--;
+						create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
+						x2=200; y2=200;
+					}
 					else
+					{
 						vidas--;
+						create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
+						x=200; y=200;
+					}
 					break;
 				}
 					else
@@ -619,35 +639,42 @@ void jogar_multiplayer()
 				a += 10;
 				while(rtc_p < a);
 			}
+			
+			if(!(x < 599 && x > 100 && y > 150 && y < 599))
+				vidas--;
+			else if(!(x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
+				vidas2--;
 		}
 		while((vidas != 0 && vidas2!=0) && tecla != 0x1);
-		
-		draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
-		if(argc == 1)
+		if(tecla != 0x1)
 		{
-			drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-			if(vidas > 0)
+			draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
+			if(argc == 1)
 			{
-				draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
-				actualiza_pontuacao(vidas*(rtc_p/1000));
+				drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
+				if(vidas > 0)
+				{
+					draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+					actualiza_pontuacao(vidas*(rtc_p/1000));
+				}
+				else
+					draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
 			}
 			else
-				draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
-		}
-		else
-		{
-			drawIntAt(vidas2*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-			if(vidas2 > 0)
 			{
-				draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
-				actualiza_pontuacao(vidas2*(rtc_p/1000));
+				drawIntAt(vidas2*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
+				if(vidas2 > 0)
+				{
+					draw_string("GANHOU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+					actualiza_pontuacao(vidas2*(rtc_p/1000));
+				}
+				else
+					draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
 			}
-			else
-				draw_string("PERDEU O JOGO!", HRES/2-150, 100, PURPLE, BLACK, 3, video_mem);
+			
+			rtc_p = 0;
+			while(rtc_p < 2000);
 		}
-		
-		rtc_p = 0;
-		while(rtc_p < 2000);
 		vidas = 3;
 		vidas2 = 3;
 	}
@@ -683,10 +710,9 @@ void jogar_singleplayer()
 			dir_y2 = 0;
 			x = 150;
 			y = 375;
-			x2 = 450;
+			x2 = 550;
 			y2 = 375;
 			desenha_ecra();
-			create_sprite(light_cycles_logo_xpm, video_mem, HRES/2-300, 50);
 			while((x < 599 && x > 100 && y > 150 && y < 599) && (x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
 			{
 				if(!queueEmpty(&teclas))
@@ -737,8 +763,7 @@ void jogar_singleplayer()
 					check = rand() % 4;
 					check_int = 100;
 				}
-				
-				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || (x2+dir_x2) >= 599 || (x2+dir_x2) <= 100 || (y2+dir_y2) <= 150 || (y2+dir_y2) >= 599 || check_flag )
+				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
 				{
 						if(check == 0)
 						{
@@ -759,13 +784,13 @@ void jogar_singleplayer()
 							{
 								dir_x2 = 0;
 								dir_y2 = 1;
-							
 							}
 							if(check_flag)
 							{
 								check = 0;
 								check_flag = 0;
 							}
+
 						}					
 						else if(check == 2)
 						{
@@ -779,6 +804,7 @@ void jogar_singleplayer()
 								check = 0;
 								check_flag = 0;
 							}
+							
 						}
 						else if(check == 3)
 						{
@@ -792,6 +818,7 @@ void jogar_singleplayer()
 								check = 0;
 								check_flag = 0;
 							}
+							
 						}
 						else if(check == 4)
 						{
@@ -814,6 +841,8 @@ void jogar_singleplayer()
 				if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1) //perde
 				{
 					vidas--;
+					create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
+					x=200; y=200;
 					break;
 				}
 					else
@@ -822,6 +851,8 @@ void jogar_singleplayer()
 				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
 				{
 					vidas2--;
+					create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
+					x2=200; y2=200;
 					break;
 				}
 					else
@@ -837,20 +868,26 @@ void jogar_singleplayer()
 				while(rtc_p < a);
 				check_int--;
 			}
+			if(!(x < 599 && x > 100 && y > 150 && y < 599))
+				vidas--;
+			else if(!(x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
+				vidas2--;
 		}
 		while((vidas != 0 && vidas2!=0) && tecla != 0x1);
-		
-		draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
-		drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
-		if(vidas > 0)
+		if(tecla != 0x1)
 		{
-			draw_string("GANHOU O JOGO!", HRES/2-150, 200, PURPLE, BLACK, 3, video_mem);
-			actualiza_pontuacao(vidas*(rtc_p/1000));
+			draw_string("PONTUACAO: ", HRES/2-350, 300, PURPLE, BLACK, 3, video_mem);
+			drawIntAt(vidas*(rtc_p/1000), HRES/2-100, 300, PURPLE, BLACK, 3,video_mem);
+			if(vidas > 0)
+			{
+				draw_string("GANHOU O JOGO!", HRES/2-150, 200, PURPLE, BLACK, 3, video_mem);
+				actualiza_pontuacao(vidas*(rtc_p/1000));
+			}
+			else
+				draw_string("PERDEU O JOGO!", HRES/2-150, 200, PURPLE, BLACK, 3, video_mem);
+			rtc_p = 0;
+			while(rtc_p < 2000);
 		}
-		else
-			draw_string("PERDEU O JOGO!", HRES/2-150, 200, PURPLE, BLACK, 3, video_mem);
-		rtc_p = 0;
-		while(rtc_p < 2000);
 		vidas = 3;
 		vidas2 = 3;
 	}
@@ -860,13 +897,13 @@ void menu_jogar()
 {
 	Byte temp;
 	clear_screen(BLACK, video_mem);
-	//draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
-	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2-300, 50);
-	draw_string("MENU DE JOGO", HRES/2-150, 200, WHITE, BLACK, 2, video_mem);
-	draw_string("1 - CRIAR JOGO", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-	draw_string("2 - JUNTAR-SE A JOGO", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-	draw_string("3 - JOGAR CONTRA O PC", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
-	draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
+	create_sprite(menu_xpm, video_mem,(HRES/2)+15,VRES/2);
+	draw_string("MENU DE JOGO", HRES/2-100, 200, WHITE, BLACK, 2, video_mem);
+	draw_string("1 - CRIAR JOGO", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("2 - JUNTAR-SE A JOGO", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("3 - JOGAR CONTRA O PC", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+	draw_string("ESC - SAIR", HRES/2-150, 450, WHITE, BLACK, 2, video_mem);
 	do
 	{
 		if(!queueEmpty(&teclas))
@@ -897,13 +934,13 @@ void menu_jogar()
 void draw_menu()
 {
 	clear_screen(BLACK, video_mem);
-	//draw_string("LIGHT CYCLES", HRES/2-150, 100, WHITE, BLACK, 3, video_mem);
-	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2-300, 50);
+	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
+	create_sprite(menu_xpm, video_mem,(HRES/2)+15,VRES/2);
 	draw_string("MENU", HRES/2-50, 200, WHITE, BLACK, 2, video_mem);
-	draw_string("1 - JOGAR", HRES/2-150, 250, WHITE, BLACK, 2, video_mem);
-	draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-	draw_string("3 - VER PONTUACOES", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
-	draw_string("ESC - SAIR", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+	draw_string("1 - JOGAR", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("2 - CONFIGURAR TECLAS", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("3 - VER PONTUACOES", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
+	draw_string("ESC - SAIR", HRES/2-150, 450, WHITE, BLACK, 2, video_mem);
 	do
 	{	
 		if(!queueEmpty(&teclas))
@@ -921,7 +958,7 @@ void draw_menu()
 			}
 			else if(temp  == 0x4)
 			{
-				read_pontuacoes();
+				mostra_pontuacoes();
 				break;
 			}
 		}
