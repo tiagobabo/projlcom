@@ -8,6 +8,8 @@ NFLAGS=-t -f coff
 CC=gcc
 #Compiler NASM
 NASM= nasm
+#Lib
+LIBS= -llcom
 #Objectos
 OBJECTS= video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serie.o
 #NOME DO PROJECTO
@@ -15,8 +17,8 @@ LIGHT_CYCLES= lightcycles.exe
 
 all: $(LIGHT_CYCLES)
 
-$(LIGHT_CYCLES): $(OBJECTS)
-	$(CC) -Wall $(OBJECTS) -o $(LIGHT_CYCLES)
+$(LIGHT_CYCLES): $(OBJECTS) liblcom.a
+	$(CC) -Wall $(OBJECTS) -L. $(LIBS) -o $(LIGHT_CYCLES)
 
 %.o: %.c %.h
 	@echo A compilar o ficheiro: $<
@@ -25,6 +27,9 @@ $(LIGHT_CYCLES): $(OBJECTS)
 %.o: %.asm
 	@echo A compilar o ficheiro: $<
 	@$(NASM) $(NFLAGS) $<
+	
+liblcom.a: $(OBJECTS)
+	@ar -cr liblcom.a $(OBJECTS)
 	
 clean:
 	-rm -rf *.o *.exe
