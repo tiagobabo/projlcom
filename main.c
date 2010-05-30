@@ -869,9 +869,9 @@ void jogar_singleplayer()
 				tmp_dir_x = dir_x2;
 				tmp_dir_y = dir_y2;
 				
-				if(IA == 1)
+				if(IA == 1 || IA == 3)
 				{
-					if(check_int == 0)
+					if(check_int == 0 && IA == 1)
 					{
 						check_flag = 1;
 						srand (time(NULL));
@@ -1041,8 +1041,9 @@ void jogar_menu_singleplayer()
 	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
 	create_sprite(menu_xpm, video_mem,(HRES/2)+15,VRES/2);
 	draw_string("MENU DE JOGO VS PC", HRES/2-80, 200, WHITE, BLACK, 2, video_mem);
-	draw_string("1 - AI 1", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
-	draw_string("2 - AI 2", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("1-AI 1(Around+Random)", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("2-AI 2(Stay Away)", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("3-AI 3(WallHugger)", HRES/2-150, 400, WHITE, BLACK, 2, video_mem);
 	draw_string("ESC - SAIR", HRES/2-150, 450, WHITE, BLACK, 2, video_mem);
 	do
 	{
@@ -1058,6 +1059,12 @@ void jogar_menu_singleplayer()
 			if(temp  == 0x3)
 			{
 				IA = 2;
+				jogar_singleplayer();
+				break;
+			}
+			if(temp  == 0x4)
+			{
+				IA = 3;
 				jogar_singleplayer();
 				break;
 			}
