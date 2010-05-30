@@ -760,32 +760,27 @@ void jogar_singleplayer()
 				tecla = queueGet(&teclas);
 					if(tecla  == 0x1)
 					{
-						envia_mensagem(base, tecla);
 						break;
 					}
 					else if(tecla == key_down && dir_x != 0)
 					{
 						dir_x = 0;
 						dir_y = 1;
-						envia_mensagem(base, key_down_default);
 					}
 					else if(tecla == key_up && dir_x != 0)
 					{
 						dir_x = 0;
 						dir_y = -1;
-						envia_mensagem(base, key_up_default);
 					}
 					else if(tecla == key_left && dir_y != 0)
 					{
 						dir_x = -1;
 						dir_y = 0;
-						envia_mensagem(base, key_left_default);
 					}
 					else if(tecla == key_right && dir_y != 0)
 					{
 						dir_x = 1;
 						dir_y = 0;
-						envia_mensagem(base, key_right_default);
 					}
 				}
 								
