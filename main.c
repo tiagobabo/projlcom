@@ -522,7 +522,7 @@ void jogar_multiplayer()
 		do
 		{
 			clear_screen(BLACK, video_mem);
-			int tab[500][450];
+			char tab[500][450];
 			int i, j;
 			for(i = 0; i < 499; i++)
 				for(j = 0; j < 449; j++)
@@ -735,7 +735,7 @@ void jogar_singleplayer()
 		do
 		{
 			clear_screen(BLACK, video_mem);
-			int tab[500][450];
+			char tab[500][450];
 			int i, j;
 			for(i = 1; i < 499; i++)
 				for(j = 1; j < 449; j++)
@@ -798,7 +798,7 @@ void jogar_singleplayer()
 					check = rand() % 4;
 					check_int = 300;
 				}
-				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
+				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-150] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
 				{
 						if(check == 0)
 						{
@@ -873,7 +873,7 @@ void jogar_singleplayer()
 				if((x+dir_x) == (x2+dir_x2) && (y+dir_y) == (y2+dir_y2))
 					break;
 				
-				if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1) //perde
+				if(tab[(x+dir_x)-100][(y+dir_y)-150] == 1) //perde
 				{
 					vidas--;
 					create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
@@ -881,9 +881,9 @@ void jogar_singleplayer()
 					break;
 				}
 					else
-						tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
+						tab[(x+dir_x)-100][(y+dir_y)-150] = 1;
 						
-				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
+				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-150] == 1) //perde
 				{
 					vidas2--;
 					create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
@@ -891,7 +891,7 @@ void jogar_singleplayer()
 					break;
 				}
 					else
-						tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 1;
+						tab[(x2+dir_x2)-100][(y2+dir_y2)-150] = 1;
 				
 				it++;
 				x = x + dir_x;

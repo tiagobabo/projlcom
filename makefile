@@ -1,7 +1,7 @@
 # Makefile
 
 #Compiler C flags
-CFLAGS=-c -Wall
+CFLAGS=-Wall
 #Compiler NASM flags
 NFLAGS=-t -f coff
 #Compiler C
@@ -16,7 +16,7 @@ LIGHT_CYCLES= lightcycles.exe
 all: $(LIGHT_CYCLES)
 
 $(LIGHT_CYCLES): $(OBJECTS)
-	$(CC) -Wall main.c -o $(LIGHT_CYCLES)
+	$(CC) -Wall $(OBJECTS) -o $(LIGHT_CYCLES)
 
 %.o: %.c %.h
 	@echo A compilar o ficheiro: $<
