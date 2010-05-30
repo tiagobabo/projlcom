@@ -41,6 +41,7 @@ extern Byte data_mode;
 
 int vidas = 3;
 int vidas2 = 3;
+int IA = 1; //Tipo de Inteligencia Artificial
 int argc;
 
 //Queues a serem utilizadas
@@ -721,6 +722,83 @@ void jogar_multiplayer()
 	set_uart_register(base, SER_IER, 0);
 	finalize_serie();
 }
+char tab[500][450];
+
+int check_best_way(int x, int y)
+{
+	int i= 0;
+	int j= 0;
+	int g= 0;
+	int h= 0;
+	int x_ori = x-100;
+	int y_ori = y-150;
+	x = x_ori;
+	y = y_ori;
+	while(x< 499 && x > 0)
+	{
+		if(tab[x][y] == 1) break;
+		x++;
+		i++;
+	}
+	x = x_ori;
+	y = y_ori;
+	while(x< 499 && x > 0)
+	{
+		if(tab[x][y] == 1) break;
+		x--;
+		j++;
+	}
+	x = x_ori;
+	y = y_ori;
+	while(y< 449 && y > 0)
+	{
+		if(tab[x][y] == 1) break;
+		y++;
+		g++;
+	}
+	x = x_ori;
+	y = y_ori;
+	while(y< 449 && y > 0)
+	{
+		if(tab[x][y] == 1) break;
+		y--;
+		h++;
+	}
+		
+	if(i > j)
+	{
+		if(i > g)
+		{
+			if(i > h)
+			{
+				return 1;
+			}
+			else
+				return 4;
+		}
+		else if(g > h)
+		{
+			return 3;
+		}
+		else
+			return 4;
+	}
+	else if(j > g)
+	{
+		if(j > h)
+		{
+			return 2;
+		}
+		else
+			return 4;
+	}
+	else if(g > h)
+	{
+		return 3;
+	}
+	else
+		return 4;
+}
 
 //Modo de jogo singleplayer (1 jogador) contra Inteligencia Artificial programada.
 void jogar_singleplayer()
@@ -735,7 +813,7 @@ void jogar_singleplayer()
 		do
 		{
 			clear_screen(BLACK, video_mem);
-			char tab[500][450];
+			
 			int i, j;
 			for(i = 1; i < 499; i++)
 				for(j = 1; j < 449; j++)
@@ -791,80 +869,108 @@ void jogar_singleplayer()
 				tmp_dir_x = dir_x2;
 				tmp_dir_y = dir_y2;
 				
-				if(check_int == 0)
+				if(IA == 1)
 				{
-					check_flag = 1;
-					srand (time(NULL));
-					check = rand() % 4;
-					check_int = 300;
-				}
-				while(tab[(x2+dir_x2)-100][(y2+dir_y2)-150] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
-				{
-						if(check == 0)
-						{
-							if(tmp_dir_x != 0)
+					if(check_int == 0)
+					{
+						check_flag = 1;
+						srand (time(NULL));
+						check = rand() % 4;
+						check_int = 300;
+					}
+					while(tab[(x2+dir_x2)-100][(y2+dir_y2)-150] == 1 || (x2+dir_x2) > 598 || (x2+dir_x2) < 101 || (y2+dir_y2) < 151 || (y2+dir_y2) > 598 || check_flag )
+					{
+							if(check == 0)
 							{
-								dir_x2 = 0;
-								dir_y2 = -1;
+								if(tmp_dir_x != 0)
+								{
+									dir_x2 = 0;
+									dir_y2 = -1;
+								}
+								if(check_flag)
+								{
+									check = 0;
+									check_flag = 0;
+								}
 							}
-							if(check_flag)
+							else if(check == 1)
 							{
-								check = 0;
-								check_flag = 0;
-							}
-						}
-						else if(check == 1)
-						{
-							if(tmp_dir_x != 0)
-							{
-								dir_x2 = 0;
-								dir_y2 = 1;
-							}
-							if(check_flag)
-							{
-								check = 0;
-								check_flag = 0;
-							}
+								if(tmp_dir_x != 0)
+								{
+									dir_x2 = 0;
+									dir_y2 = 1;
+								}
+								if(check_flag)
+								{
+									check = 0;
+									check_flag = 0;
+								}
 
-						}					
-						else if(check == 2)
-						{
-							if(tmp_dir_y != 0)
+							}					
+							else if(check == 2)
 							{
-								dir_x2 = 1;
-								dir_y2 = 0;
+								if(tmp_dir_y != 0)
+								{
+									dir_x2 = 1;
+									dir_y2 = 0;
+								}
+								if(check_flag)
+								{
+									check = 0;
+									check_flag = 0;
+								}
+								
 							}
-							if(check_flag)
+							else if(check == 3)
 							{
-								check = 0;
-								check_flag = 0;
+								if(tmp_dir_y != 0)
+								{
+									dir_x2 = -1;
+									dir_y2 = 0;
+								}
+								if(check_flag)
+								{
+									check = 0;
+									check_flag = 0;
+								}
+								
 							}
-							
-						}
-						else if(check == 3)
-						{
-							if(tmp_dir_y != 0)
+							else if(check == 4)
 							{
-								dir_x2 = -1;
-								dir_y2 = 0;
+								if(check_flag)
+								{
+									check = 0;
+									check_flag = 0;
+								}
+								break;
 							}
-							if(check_flag)
-							{
-								check = 0;
-								check_flag = 0;
-							}
-							
-						}
-						else if(check == 4)
-						{
-							if(check_flag)
-							{
-								check = 0;
-								check_flag = 0;
-							}
+							check++;
+					}
+				}
+				else
+				{
+					int check = check_best_way((x2+dir_x2),(y2+dir_y2));
+					
+					switch(check)
+					{
+						case 1:
+							dir_x2 = 1;
+							dir_y2 = 0;
 							break;
-						}
-						check++;
+						case 2:
+							dir_x2 = -1;
+							dir_y2 = 0;
+							break;
+						case 3:
+							dir_x2 = 0;
+							dir_y2 = 1;
+							break;
+						case 4:
+							dir_x2 = 0;
+							dir_y2 = -1;
+						default:
+							break;				
+					}
 				}
 				
 					set_pixel(x+dir_x, y + dir_y, GREEN, video_mem);
@@ -928,6 +1034,38 @@ void jogar_singleplayer()
 	}
 }
 
+void jogar_menu_singleplayer()
+{
+	Byte temp;
+	clear_screen(BLACK, video_mem);
+	create_sprite(light_cycles_logo_xpm, video_mem, HRES/2, 100);
+	create_sprite(menu_xpm, video_mem,(HRES/2)+15,VRES/2);
+	draw_string("MENU DE JOGO VS PC", HRES/2-80, 200, WHITE, BLACK, 2, video_mem);
+	draw_string("1 - AI 1", HRES/2-150, 300, WHITE, BLACK, 2, video_mem);
+	draw_string("2 - AI 2", HRES/2-150, 350, WHITE, BLACK, 2, video_mem);
+	draw_string("ESC - SAIR", HRES/2-150, 450, WHITE, BLACK, 2, video_mem);
+	do
+	{
+		if(!queueEmpty(&teclas))
+		{
+			temp = queueGet(&teclas);
+			if(temp  == 0x2)
+			{
+				IA = 1;
+				jogar_singleplayer();
+				break;
+			}
+			if(temp  == 0x3)
+			{
+				IA = 2;
+				jogar_singleplayer();
+				break;
+			}
+		}
+	}
+	while (temp != 1);
+}
+
 //Menu de escolha do modo de jogo.
 void menu_jogar()
 {
@@ -959,7 +1097,7 @@ void menu_jogar()
 			}
 			if(temp  == 0x4)
 			{
-				jogar_singleplayer();
+				jogar_menu_singleplayer();
 				break;
 			}
 		}
