@@ -11,7 +11,7 @@ NASM= nasm
 #Lib
 LIBS= -llcom
 #Objectos
-OBJECTS= video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o gqueue.o song.o serie.o
+OBJECTS= video.o main.o sprite.o kbc.o asm_kbd.o timer.o music.o ints.o isr.o queue.o rtc_asm.o rtc.o GQueue.o song.o serie.o
 #NOME DO PROJECTO
 LIGHT_CYCLES= lightcycles.exe
 

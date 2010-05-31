@@ -19,6 +19,7 @@
 #include "pixmap.h"
 
 //Variaveis globais
+int tocamusica = 1;
 char *video_mem;
 int time_sound;
 Song* bgm;
@@ -633,7 +634,7 @@ void jogar_multiplayer()
 				if((x+dir_x) == (x2+dir_x2) && (y+dir_y) == (y2+dir_y2))
 					break;
 				
-				if(tab[(x+dir_x)-100][(y+dir_y)-100] == 1) //perde
+				if(tab[(x+dir_x)-100][(y+dir_y)-150] == 1) //perde
 				{
 					if(argc == 1)
 					{
@@ -644,17 +645,17 @@ void jogar_multiplayer()
 					else
 					{
 						vidas2--;
-						create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
+						create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
 						x2=200; y2=200;
 					}
 					break;
 				}
 					else
-						tab[(x+dir_x)-100][(y+dir_y)-100] = 1;
+						tab[(x+dir_x)-100][(y+dir_y)-150] = 1;
 						
-				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-100] == 1) //perde
+				if(tab[(x2+dir_x2)-100][(y2+dir_y2)-150] == 1) //perde
 				{
-					if(argc ==1)
+					if(argc == 1)
 					{
 						vidas2--;
 						create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
@@ -663,13 +664,13 @@ void jogar_multiplayer()
 					else
 					{
 						vidas--;
-						create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
+						create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
 						x=200; y=200;
 					}
 					break;
 				}
 					else
-						tab[(x2+dir_x2)-100][(y2+dir_y2)-100] = 1;
+						tab[(x2+dir_x2)-100][(y2+dir_y2)-150] = 1;
 				
 				it++;
 				x = x + dir_x;
@@ -682,9 +683,15 @@ void jogar_multiplayer()
 			}
 			
 			if(!(x < 599 && x > 100 && y > 150 && y < 599))
+			{
+				create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
 				vidas--;
+			}
 			else if(!(x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
+			{
+				create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
 				vidas2--;
+			}
 		}
 		while((vidas != 0 && vidas2!=0) && tecla != 0x1);
 		if(tecla != 0x1)
@@ -1010,9 +1017,15 @@ void jogar_singleplayer()
 				check_int--;
 			}
 			if(!(x < 599 && x > 100 && y > 150 && y < 599))
+			{
+				create_sprite(explosion_xpm, video_mem,(x+dir_x),(y+dir_y));
 				vidas--;
+			}
 			else if(!(x2 < 599 && x2 > 100 && y2 > 150 && y2 < 599))
+			{
+				create_sprite(explosion_xpm, video_mem,(x2+dir_x2),(y2+dir_y2));
 				vidas2--;
+			}
 		}
 		while((vidas != 0 && vidas2!=0) && tecla != 0x1);
 		if(tecla != 0x1)
@@ -1167,7 +1180,8 @@ int main(int a, char* argv[])
 	
 	init();
 	enable_irq(RTC_IRQ);
-	state = STOPPED;
+	if(tocamusica)
+		state = STOPPED;
 	while(temp != 1) draw_menu();
 	finalize();	
 	
